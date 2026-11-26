@@ -1,0 +1,24 @@
+{
+  "domain": "gio910gerai.biz.id",
+  "registrar": "Citrahost (https://www.citrahost.com/harga-domain)",
+  "dns_records_required_in_cloudflare": [
+    {
+      "type": "A",
+      "name": "@",
+      "content": "192.0.2.1",
+      "proxied": true
+    },
+    {
+      "type": "A",
+      "name": "www",
+      "content": "192.0.2.1",
+      "proxied": true
+    }
+  ],
+  "cloudflare_redirect_rule": {
+    "expression": "(http.host eq \"gio910gerai.biz.id\") or (http.host eq \"www.gio910gerai.biz.id\")",
+    "target_url": "https://script.google.com/macros/s/GANTI_DENGAN_ID_EXEC_ANDA/exec",
+    "status_code": 302,
+    "preserve_query_string": true
+  }
+}

@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Konsol Hybrid DAO — gio910gerai.eth (Snapshot + Safe + Portal)</title>
+    <style>
+      :root {
+        --bg: #0b1220;
+        --card: #131f36;
+        --bd: #22365c;
+        --tx: #e8eefc;
+        --mt: #9fb0d0;
+        --ac: #38bdf8;
+        --ok: #34d399;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--tx); font: 14px/1.5 system-ui, -apple-system, sans-serif; }
+      .wrap { max-width: 980px; margin: 0 auto; padding: 18px 14px 64px; }
+      .card { background: var(--card); border: 1px solid var(--bd); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+      h1 { margin: 0 0 6px; font-size: 20px; }
+      h2 { margin: 0 0 10px; font-size: 15px; color: #7dd3fc; }
+      p, .muted { color: var(--mt); margin: 0; font-size: 13px; }
+      .row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; align-items: center; }
+      input { flex: 1 1 220px; padding: 10px 12px; border-radius: 8px; border: 1px solid #2b4370; background: #0b1220; color: #fff; font: 13px ui-monospace, monospace; }
+      button, a.btn { padding: 10px 14px; border-radius: 8px; border: 1px solid var(--ac); background: var(--ac); color: #052230; font-weight: 800; font-size: 13px; cursor: pointer; text-decoration: none; display: inline-block; }
+      button.sec, a.btn.sec { background: #182845; border-color: #2b4370; color: #cfe0ff; }
+      .pill { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 700; background: #0d2b21; color: #6ee7b7; border: 1px solid #175c49; }
+      .pill.closed { background: #1e293b; color: #cbd5e1; border-color: #334155; }
+      .prop { border: 1px solid #2b4370; background: #0f1a2c; border-radius: 12px; padding: 14px; margin-top: 10px; }
+      .bar { height: 7px; border-radius: 99px; background: #1e293b; overflow: hidden; margin-top: 4px; }
+      .bar > span { display: block; height: 100%; background: var(--ok); }
+      code { background: #080e1a; padding: 2px 6px; border-radius: 5px; font-size: 12px; color: #fbbf24; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <h1>Hybrid DAO · Holding Investasi (<code>gio910gerai.eth</code>)</h1>
+        <p>Operasional harian tetap di Portal Apps Script (5 peran &amp; OTP), sedangkan pemungutan suara keputusan besar memakai <b>Snapshot</b> (tanpa gas fee) &amp; kas multi-tanda-tangan <b>Safe</b>.</p>
+        <div class="row">
+          <button id="btn-wallet" type="button">Hubungkan Dompet Web3 (MetaMask)</button>
+          <span id="wallet-status" class="muted">Dompet belum terhubung</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Konfigurasi Space &amp; Sinkronisasi ke Portal</h2>
+        <div class="row">
+          <input id="inp-space" type="text" value="gio910gerai.eth" placeholder="Space ENS (contoh: gio910gerai.eth)" />
+          <input id="inp-safe" type="text" placeholder="Alamat Safe Multi-sig (opsional: 0x...)" />
+        </div>
+        <div class="row">
+          <button id="btn-load" type="button">Muat Proposal dari Snapshot</button>
+          <a id="lnk-snapshot" class="btn sec" target="_blank" rel="noopener noreferrer" href="https://snapshot.org/#/gio910gerai.eth">Buka Space di Snapshot ↗</a>
+          <a id="lnk-safe" class="btn sec" target="_blank" rel="noopener noreferrer" href="https://app.safe.global/">Buka Safe Treasury ↗</a>
+        </div>
+        <p id="sync-note" class="muted" style="margin-top:8px">Tip: fungsi <code>syncDaoSnapshotToPortal()</code> di <code>dao_hybrid_bridge.gs</code> otomatis menyalin seluruh hasil voting ke tab Google Sheets <code>DAO_Proposals</code> tiap 15 menit.</p>
+      </div>
+
+      <div class="card">
+        <h2>Daftar Proposal Snapshot (<span id="prop-count">0</span>)</h2>
+        <div id="prop-list"><p class="muted">Klik "Muat Proposal dari Snapshot" untuk mengambil data langsung dari <code>hub.snapshot.org/graphql</code>.</p></div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        "use strict";
+        let connectedAccount = null;
+
+        const esc = (s) => String(s || "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+        document.getElementById("btn-wallet").addEventListener("click", async () => {
+          const st = document.getElementById("wallet-status");
+          if (!window.ethereum) {
+            st.textContent = "Dompet Web3 tidak terdeteksi. Buka lewat MetaMask/Brave atau pasang ekstensi MetaMask.";
+            return;
+          }
+          try {
+            const accs = await window.ethereum.request({ method: "eth_requestAccounts" });
+            connectedAccount = accs[0] || null;
+            const chainId = await window.ethereum.request({ method: "eth_chainId" });
+            st.textContent = connectedAccount
+              ? `Terhubung: ${connectedAccount.slice(0, 6)}…${connectedAccount.slice(-4)} (Chain ${parseInt(chainId, 16)})`
+              : "Dibatalkan";
+          } catch (err) {
+            st.textContent = "Gagal menghubungkan dompet: " + (err && err.message ? err.message : err);
+          }
+        });
+
+        async function loadSnapshotProposals() {
+          const space = (document.getElementById("inp-space").value || "gio910gerai.eth").trim();
+          const safeAddr = (document.getElementById("inp-safe").value || "").trim();
+          document.getElementById("lnk-snapshot").href = "https://snapshot.org/#/" + encodeURIComponent(space);
+          document.getElementById("lnk-safe").href = safeAddr ? "https://app.safe.global/home?safe=" + encodeURIComponent(safeAddr) : "https://app.safe.global/";
+
+          const listEl = document.getElementById("prop-list");
+          listEl.innerHTML = '<p class="muted">Mengambil proposal dari Snapshot GraphQL…</p>';
+
+          const query = `query Proposals($space: String!) {
+            proposals(first: 15, skip: 0, where: { space_in: [$space] }, orderBy: "created", orderDirection: desc) {
+              id title body state author choices scores scores_total quorum start end link
+            }
+          }`;
+          try {
+            const r = await fetch("https://hub.snapshot.org/graphql", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ query, variables: { space } })
+            });
+            const j = await r.json();
+            const items = (j.data && j.data.proposals) || [];
+            document.getElementById("prop-count").textContent = String(items.length);
+            if (!items.length) {
+              listEl.innerHTML = `<p class="muted">Belum ada proposal di space <code>${esc(space)}</code>. Buat space Snapshot untuk <code>${esc(space)}</code> terlebih dahulu.</p>`;
+              return;
+            }
+            listEl.innerHTML = items.map((p) => {
+              const total = Number(p.scores_total || 0);
+              const bars = (p.choices || []).map((ch, idx) => {
+                const sc = Number((p.scores && p.scores[idx]) || 0);
+                const pct = total > 0 ? Math.round((sc / total) * 100) : 0;
+                return `<div style="margin-top:8px;font-size:12.5px">
+                  <div style="display:flex;justify-content:space-between"><span>${esc(ch)}</span><b>${sc.toLocaleString("id-ID")} (${pct}%)</b></div>
+                  <div class="bar"><span style="width:${pct}%"></span></div>
+                </div>`;
+              }).join("");
+              const link = p.link || `https://snapshot.org/#/${encodeURIComponent(space)}/proposal/${encodeURIComponent(p.id)}`;
+              return `<div class="prop">
+                <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
+                  <b>${esc(p.title)}</b>
+                  <span class="pill ${p.state === "active" ? "" : "closed"}">${esc(p.state)}</span>
+                </div>
+                <div class="muted" style="margin-top:4px">Pengusul: <code>${esc(p.author)}</code> · Kuorum: ${Number(p.quorum || 0).toLocaleString("id-ID")} · Total suara: ${total.toLocaleString("id-ID")}</div>
+                ${bars}
+                <div class="row" style="margin-top:10px">
+                  <a class="btn" target="_blank" rel="noopener noreferrer" href="${esc(link)}">Vote di Snapshot (Tanpa Gas Fee) ↗</a>
+                </div>
+              </div>`;
+            }).join("");
+          } catch (err) {
+            listEl.innerHTML = `<p class="muted">Gagal memuat Snapshot: ${esc(err && err.message || err)}</p>`;
+          }
+        }
+
+        document.getElementById("btn-load").addEventListener("click", loadSnapshotProposals);
+      })();
+    </script>
+  </body>
+</html>

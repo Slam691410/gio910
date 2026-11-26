@@ -1,0 +1,784 @@
+/* ===== Pemisahan PUBLIK vs SETELAH MASUK (2026-11-24) ===== */
+body:not(.kai-authed) #kai-btn-data, body:not(.kai-authed) #kai-btn-backup, body:not(.kai-authed) #kai-btn-reg,
+body:not(.kai-authed) #kai-btn-ops, body:not(.kai-authed) #kai-btn-codegs { display: none !important; }
+body.kai-authed:not([data-kai-tier="Pemilik"]):not([data-kai-tier="Manajemen"]):not([data-kai-tier="Auditor"]) #kai-btn-data { display: none !important; }
+body.kai-authed:not([data-kai-tier="Pemilik"]) #kai-btn-backup { display: none !important; }
+body.kai-authed:not([data-kai-tier="Pemilik"]):not([data-kai-tier="Manajemen"]) #kai-btn-codegs { display: none !important; }
+body.kai-authed[data-kai-tier="Freelancer"] #kai-btn-reg, body.kai-authed[data-kai-tier="Tamu"] #kai-btn-reg,
+body.kai-authed[data-kai-tier="Freelancer"] #kai-btn-ops, body.kai-authed[data-kai-tier="Tamu"] #kai-btn-ops { display: none !important; }
+nav[aria-label="Navigasi utama portal"] button[data-kai-locked]::after { content: " 🔒"; font-size: 10px; opacity: .85; }
+.kai-gate-inline { max-width: 620px; margin: 28px auto; background: #0f1a2c; border: 1px solid #2b4370; border-radius: 14px; padding: 26px 24px; text-align: center; }
+.kai-gate-inline .kai-gate-ico { font-size: 30px; line-height: 1; margin-bottom: 10px; }
+.kai-gate-inline h1 { margin: 0 0 8px; font: 800 19px/1.3 system-ui, sans-serif; color: #e8eefc; }
+.kai-gate-inline p { margin: 0 auto 10px; max-width: 480px; font: 500 13.5px/1.6 system-ui, sans-serif; color: #a9bcd9; }
+.kai-gate-inline .kai-gate-sub { font-size: 12.5px; color: #8398bc; }
+.kai-gate-inline b { color: #7dd3fc; }
+.kai-gate-inline .kai-gate-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 16px; }
+.kai-gate-btn { padding: 10px 16px; border-radius: 9px; border: 1px solid #38bdf8; background: #38bdf8; color: #06222f; font: 700 13px/1 system-ui, sans-serif; cursor: pointer; }
+.kai-gate-btn:hover { background: #7dd3fc; }
+.kai-gate-btn-alt { background: #182845; color: #e8eefc; border-color: #22365c; }
+.kai-gate-btn-alt:hover { background: #1e3357; border-color: #38bdf8; }
+.kai-gate-btn:focus-visible { outline: 2px solid #fbbf24; outline-offset: 2px; }
+.kai-mit-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 10px; }
+.kai-mit-bar select, .kai-mit-bar input { background: #0b1220; color: #e8eefc; border: 1px solid #22365c; border-radius: 8px; padding: 7px 9px; font: 600 12.5px/1.2 system-ui, sans-serif; }
+.kai-mit-bar input { flex: 1 1 200px; min-width: 160px; }
+.kai-mit-sum { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; font: 700 11.5px/1.3 system-ui, sans-serif; }
+.kai-mit-chip { padding: 4px 9px; border-radius: 999px; border: 1px solid #22365c; color: #cfe0ff; background: #0b1220; }
+.kai-mit-chip.d { border-color: #175c49; color: #6ee7b7; } .kai-mit-chip.s { border-color: #5b4a17; color: #fbbf24; }
+.kai-mit-chip.b { border-color: #5b2c2c; color: #fca5a5; } .kai-mit-chip.x { border-color: #3b3470; color: #c4b5fd; }
+@media print { .kai-gate-inline .kai-gate-actions { display: none !important; } }
+
+/* ============================================================
+   KANTOR AI — LAPISAN PERBAIKAN v2026.11.24
+   Sumber: TABEL_KESELURUHAN_MITIGASI_ATOMIK_2026-11-23.md
+   L17 (Q-01..Q-20), L01 (H-05/H-06), L15 (T-13/T-14/T-25), L18 (B-03/B-04)
+   ============================================================ */
+
+/* ---------- Q-04 Fokus keyboard: focus-visible konsisten ---------- */
+:where(button, a, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid #7dd3fc !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 6px rgba(56, 189, 248, .18) !important;
+  border-radius: 8px;
+}
+/* Tailwind focus:outline-none tidak boleh mematikan indikator */
+.focus\:outline-none:focus-visible,
+.focus\:outline-none:focus {
+  outline: 3px solid #7dd3fc !important;
+  outline-offset: 2px !important;
+}
+
+/* ---------- Skip link (aksesibilitas keyboard) ---------- */
+.kai-skip {
+  position: fixed; left: 12px; top: -80px; z-index: 99999;
+  background: #38bdf8; color: #06222f; padding: 10px 16px;
+  border-radius: 8px; font: 800 14px/1.2 system-ui, sans-serif;
+  text-decoration: none; transition: top .15s ease;
+}
+.kai-skip:focus { top: 12px; }
+.kai-sr-only {
+  position: absolute !important; width: 1px; height: 1px; padding: 0;
+  margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ---------- Q-01 Tipografi minimum 12,5 px (mode Nyaman) ---------- */
+html[data-kai-teks="nyaman"] :is(
+  .text-xs,
+  .text-\[10\.5px\],
+  .text-\[10px\],
+  .text-\[11\.5px\],
+  .text-\[11px\],
+  .text-\[12px\],
+  .text-\[9\.5px\],
+  .bn-chip,
+  .bn-count,
+  .bn-ex,
+  .bn-ex span,
+  .bn-foot,
+  .bn-link,
+  .bn-live,
+  .bn-name,
+  .bn-sop-item,
+  .bn-sop-item b,
+  .bn-sop-t,
+  .bn-src-t,
+  .bn-sub,
+  .bn-watch,
+  .kb h4,
+  .kb p,.kb li,.kb td,.kb th,
+  .kb-foot,
+  .kb-mono,
+  .kb-pill,
+  .kb-table th,
+  .kb-warn,
+  .vn-fn,
+  .vn-id,
+  .vn-name,
+  .vn-note,
+  .vn-pill,
+  .vn-st,
+  .vn-stat span,
+  .vn-sub,
+  .vn-table th,
+  .vn-tot,
+  details.kb-det summary,
+  details.kb-det summary .kb-kode,
+  table.vn-table
+) {
+  font-size: 12.5px !important;
+  line-height: 1.45 !important;
+}
+html[data-kai-teks="besar"] :is(
+  .text-xs,
+  .text-\[10\.5px\],
+  .text-\[10px\],
+  .text-\[11\.5px\],
+  .text-\[11px\],
+  .text-\[12px\],
+  .text-\[9\.5px\],
+  .bn-chip,
+  .bn-count,
+  .bn-ex,
+  .bn-ex span,
+  .bn-foot,
+  .bn-link,
+  .bn-live,
+  .bn-name,
+  .bn-sop-item,
+  .bn-sop-item b,
+  .bn-sop-t,
+  .bn-src-t,
+  .bn-sub,
+  .bn-watch,
+  .kb h4,
+  .kb p,.kb li,.kb td,.kb th,
+  .kb-foot,
+  .kb-mono,
+  .kb-pill,
+  .kb-table th,
+  .kb-warn,
+  .vn-fn,
+  .vn-id,
+  .vn-name,
+  .vn-note,
+  .vn-pill,
+  .vn-st,
+  .vn-stat span,
+  .vn-sub,
+  .vn-table th,
+  .vn-tot,
+  details.kb-det summary,
+  details.kb-det summary .kb-kode,
+  table.vn-table
+) {
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+
+
+/* Font-size inline pada HTML vendor/kb (tanpa kelas) */
+html[data-kai-teks="nyaman"] [style*="font-size:8.3px"],
+  html[data-kai-teks="nyaman"] [style*="font-size: 8.3px"],
+  html[data-kai-teks="nyaman"] [style*="font-size:8.5px"],
+  html[data-kai-teks="nyaman"] [style*="font-size: 8.5px"],
+  html[data-kai-teks="nyaman"] [style*="font-size:8.6px"],
+  html[data-kai-teks="nyaman"] [style*="font-size: 8.6px"],
+  html[data-kai-teks="nyaman"] [style*="font-size:9px"],
+  html[data-kai-teks="nyaman"] [style*="font-size: 9px"],
+  html[data-kai-teks="nyaman"] [style*="font-size:9.3px"],
+  html[data-kai-teks="nyaman"] [style*="font-size: 9.3px"],
+  html[data-kai-teks="nyaman"] [style*="font-size:9.5px"],
+  html[data-kai-teks="nyaman"] [style*="font-size: 9.5px"],
+  html[data-kai-teks="nyaman"] [style*="font-size:9.8px"],
+  html[data-kai-teks="nyaman"] [style*="font-size: 9.8px"],
+  html[data-kai-teks="nyaman"] [style*="font-size:10px"],
+  html[data-kai-teks="nyaman"] [style*="font-size: 10px"],
+  html[data-kai-teks="nyaman"] [style*="font-size:10.3px"],
+  html[data-kai-teks="nyaman"] [style*="font-size: 10.3px"],
+  html[data-kai-teks="nyaman"] [style*="font-size:10.5px"],
+  html[data-kai-teks="nyaman"] [style*="font-size: 10.5px"],
+  html[data-kai-teks="nyaman"] [style*="font-size:11px"],
+  html[data-kai-teks="nyaman"] [style*="font-size: 11px"],
+  html[data-kai-teks="nyaman"] [style*="font-size:11.5px"],
+  html[data-kai-teks="nyaman"] [style*="font-size: 11.5px"],
+  html[data-kai-teks="nyaman"] [style*="font-size:12px"],
+  html[data-kai-teks="nyaman"] [style*="font-size: 12px"] {
+  font-size: 12.5px !important;
+  line-height: 1.45 !important;
+}
+html[data-kai-teks="besar"] [style*="font-size:8.3px"],
+  html[data-kai-teks="besar"] [style*="font-size: 8.3px"],
+  html[data-kai-teks="besar"] [style*="font-size:8.5px"],
+  html[data-kai-teks="besar"] [style*="font-size: 8.5px"],
+  html[data-kai-teks="besar"] [style*="font-size:8.6px"],
+  html[data-kai-teks="besar"] [style*="font-size: 8.6px"],
+  html[data-kai-teks="besar"] [style*="font-size:9px"],
+  html[data-kai-teks="besar"] [style*="font-size: 9px"],
+  html[data-kai-teks="besar"] [style*="font-size:9.3px"],
+  html[data-kai-teks="besar"] [style*="font-size: 9.3px"],
+  html[data-kai-teks="besar"] [style*="font-size:9.5px"],
+  html[data-kai-teks="besar"] [style*="font-size: 9.5px"],
+  html[data-kai-teks="besar"] [style*="font-size:9.8px"],
+  html[data-kai-teks="besar"] [style*="font-size: 9.8px"],
+  html[data-kai-teks="besar"] [style*="font-size:10px"],
+  html[data-kai-teks="besar"] [style*="font-size: 10px"],
+  html[data-kai-teks="besar"] [style*="font-size:10.3px"],
+  html[data-kai-teks="besar"] [style*="font-size: 10.3px"],
+  html[data-kai-teks="besar"] [style*="font-size:10.5px"],
+  html[data-kai-teks="besar"] [style*="font-size: 10.5px"],
+  html[data-kai-teks="besar"] [style*="font-size:11px"],
+  html[data-kai-teks="besar"] [style*="font-size: 11px"],
+  html[data-kai-teks="besar"] [style*="font-size:11.5px"],
+  html[data-kai-teks="besar"] [style*="font-size: 11.5px"],
+  html[data-kai-teks="besar"] [style*="font-size:12px"],
+  html[data-kai-teks="besar"] [style*="font-size: 12px"] {
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+
+/* ---------- Q-08 Breadcrumb ---------- */
+.kai-breadcrumb {
+  width: 100%; max-width: 1240px; margin: 0 auto; padding: 7px 20px 0;
+  font: 600 12px/1.4 system-ui, sans-serif; color: #8fa8cf;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+}
+.kai-toolbar { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; margin-left: auto; }
+.kai-tool-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: #101d33; color: #cfe0ff; border: 1px solid #22365c;
+  border-radius: 999px; padding: 3px 9px; cursor: pointer;
+  font: 700 11px/1.25 system-ui, sans-serif; transition: border-color .15s, color .15s;
+}
+.kai-tool-btn:hover { border-color: #38bdf8; color: #fff; }
+.kai-tool-btn[aria-expanded="true"] { border-color: #38bdf8; background: #0e2b23; }
+.kai-tool-btn .kai-kbd { margin-left: 2px; }
+.kai-bc-trail { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.kai-breadcrumb a { color: #7dd3fc; text-decoration: none; }
+.kai-breadcrumb a:hover { text-decoration: underline; }
+.kai-breadcrumb .kai-sep { color: #4a5f82; }
+.kai-breadcrumb [aria-current="page"] { color: #e8eefc; font-weight: 700; }
+
+/* ---------- Q-06 Tabel: wadah gulir + petunjuk ---------- */
+.kai-table-wrap {
+  width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;
+  border: 1px solid #22365c; border-radius: 10px;
+}
+.kai-table-wrap > table { min-width: 100%; }
+.kai-table-wrap:focus-visible { outline: 3px solid #7dd3fc; outline-offset: 2px; }
+.kai-table-hint {
+  font: 700 12.5px/1.3 system-ui, sans-serif; color: #7dd3fc;
+  background: #0f1a2c; border: 1px solid #22365c; border-radius: 6px;
+  padding: 3px 8px; display: inline-block; margin: 4px 0 6px;
+}
+
+/* ---------- Dock alat (Cari, Cetak, Teks, Data, Pembaruan) ---------- */
+.kai-dock { display: none; }
+.kai-dock-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: #131f36; color: #e8eefc; border: 1px solid #22365c;
+  border-radius: 999px; padding: 8px 13px; cursor: pointer;
+  font: 700 12px/1.1 system-ui, sans-serif; box-shadow: 0 6px 18px rgba(0,0,0,.35);
+  transition: border-color .15s, background .15s, transform .15s;
+}
+.kai-dock-btn:hover { border-color: #38bdf8; background: #182845; transform: translateY(-1px); }
+.kai-dock-btn .kai-ico { font-size: 14px; line-height: 1; }
+.kai-dock-btn[aria-expanded="true"] { border-color: #38bdf8; background: #0e2b23; }
+.kai-save-status {
+  font: 700 10px/1.2 system-ui, sans-serif; color: #6ee7b7;
+  padding-left: 6px; opacity: 0; transition: opacity .2s;
+}
+.kai-save-status.is-on { opacity: 1; }
+
+/* ---------- Popover Data ---------- */
+.kai-pop {
+  position: fixed; left: 14px; bottom: 14px; z-index: 70;
+  background: #131f36; border: 1px solid #38bdf8; border-radius: 12px;
+  padding: 10px; display: none; flex-direction: column; gap: 6px;
+  box-shadow: 0 18px 40px rgba(0,0,0,.5); min-width: 220px;
+}
+.kai-pop.is-open { display: flex; }
+.kai-pop button {
+  text-align: left; background: #0f1a2c; color: #e8eefc; border: 1px solid #22365c;
+  border-radius: 8px; padding: 8px 10px; cursor: pointer; font: 600 12px/1.3 system-ui, sans-serif;
+}
+.kai-pop button:hover { border-color: #38bdf8; }
+.kai-pop .kai-pop-note { font: 600 10px/1.4 system-ui, sans-serif; color: #8fa8cf; }
+
+/* ---------- Modal (pencarian, pembaruan, glosarium) ---------- */
+.kai-modal {
+  position: fixed; inset: 0; z-index: 100; display: none;
+  align-items: flex-start; justify-content: center;
+  background: rgba(2, 6, 23, .93); padding: 6vh 16px 16px;
+  overflow-y: auto;
+}
+.kai-modal.is-open { display: flex; }
+.kai-modal-card {
+  width: 100%; max-width: 760px; background: #0f1a2c;
+  border: 1px solid #2b4370; border-radius: 14px;
+  box-shadow: 0 30px 80px rgba(0,0,0,.6); overflow: hidden;
+}
+.kai-modal-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 12px 16px; border-bottom: 1px solid #22365c; background: #131f36;
+}
+.kai-modal-head h2 { margin: 0; font: 800 15px/1.3 system-ui, sans-serif; color: #e8eefc; }
+.kai-modal-close {
+  background: transparent; border: 1px solid #22365c; color: #9fb0d0;
+  border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-size: 16px;
+}
+.kai-modal-close:hover { border-color: #38bdf8; color: #e8eefc; }
+.kai-modal-body { padding: 14px 16px 18px; max-height: 70vh; overflow-y: auto; }
+.kai-search-input {
+  width: 100%; box-sizing: border-box; background: #0b1220; color: #e8eefc;
+  border: 1px solid #2b4370; border-radius: 10px; padding: 11px 13px;
+  font: 600 14px/1.4 system-ui, sans-serif;
+}
+.kai-search-input:focus { outline: 3px solid #7dd3fc; outline-offset: 1px; }
+.kai-results { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+.kai-result {
+  text-align: left; background: #131f36; border: 1px solid #22365c; color: #e8eefc;
+  border-radius: 10px; padding: 9px 11px; cursor: pointer;
+  font: 600 12.5px/1.45 system-ui, sans-serif;
+}
+.kai-result:hover, .kai-result.is-active { border-color: #38bdf8; background: #14233c; }
+.kai-result .kai-result-page {
+  display: inline-block; font: 800 10px/1.2 system-ui, sans-serif; color: #7dd3fc;
+  background: #0f1a2c; border: 1px solid #22365c; border-radius: 4px; padding: 2px 6px; margin-bottom: 3px;
+}
+.kai-result mark { background: #fbbf24; color: #1a1300; border-radius: 2px; padding: 0 1px; }
+.kai-empty { color: #8fa8cf; font: 600 12.5px/1.5 system-ui, sans-serif; padding: 10px 2px; }
+.kai-kbd {
+  display: inline-block; border: 1px solid #2b4370; border-bottom-width: 2px;
+  border-radius: 4px; padding: 1px 5px; font: 700 10px/1.3 ui-monospace, monospace; color: #cfe0ff;
+}
+.kai-hint { margin-top: 10px; font: 600 11px/1.5 system-ui, sans-serif; color: #71809f; }
+
+/* ---------- Banner status (luring / kuota / tab lain) ---------- */
+.kai-banner {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: 14px; z-index: 90;
+  max-width: min(560px, calc(100vw - 28px));
+  background: #2a210d; border: 1px solid #8a6d1f; color: #ffe7a3;
+  border-radius: 10px; padding: 9px 13px;
+  font: 700 12px/1.45 system-ui, sans-serif; box-shadow: 0 10px 30px rgba(0,0,0,.45);
+  display: none; align-items: center; gap: 10px;
+}
+.kai-banner.is-open { display: flex; }
+.kai-banner button {
+  background: #38bdf8; color: #06222f; border: 0; border-radius: 6px;
+  padding: 4px 9px; cursor: pointer; font: 800 11px/1.2 system-ui, sans-serif; white-space: nowrap;
+}
+
+/* ---------- Sorotan hasil pencarian ---------- */
+.kai-hit {
+  outline: 3px solid #fbbf24 !important;
+  outline-offset: 3px !important;
+  border-radius: 6px;
+  animation: kaiPulse 1.2s ease 3;
+}
+@keyframes kaiPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251,191,36,0); }
+  50% { box-shadow: 0 0 0 6px rgba(251,191,36,.25); }
+}
+
+/* ---------- Q-11 Mobile 360px ---------- */
+@media (max-width: 640px) {
+  header .shrink-0 { flex-shrink: 1 !important; }
+  header .whitespace-nowrap { white-space: normal !important; }
+  header div.flex.flex-wrap.items-center.gap-2 { width: 100% !important; }
+  nav > div { flex-wrap: nowrap !important; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
+  nav > div > button { flex: 0 0 auto; }
+  .kai-toolbar { width: 100%; margin-left: 0; }
+  .kai-tool-btn { font-size: 10.5px; padding: 3px 7px; }
+  .kai-tool-btn .kai-label-long { display: none; }
+  .kai-breadcrumb { padding: 6px 12px 0; font-size: 11px; }
+  main { padding-left: 12px !important; padding-right: 12px !important; }
+  .kai-banner { bottom: 70px; font-size: 11px; }
+  /* Alur kerja: baris grid 4 kolom ditata ulang jadi 2 kolom agar muat 360 px */
+  .grid-cols-\[24px_128px_1fr_auto\] { grid-template-columns: 24px minmax(0,1fr) !important; }
+  .grid-cols-\[24px_128px_1fr_auto\] > :nth-child(1) { grid-row: 1; grid-column: 1; }
+  .grid-cols-\[24px_128px_1fr_auto\] > :nth-child(2) { grid-row: 1; grid-column: 2; }
+  .grid-cols-\[24px_128px_1fr_auto\] > :nth-child(3) { grid-row: 2; grid-column: 2; }
+  .grid-cols-\[24px_128px_1fr_auto\] > :nth-child(4) { grid-row: 3; grid-column: 2; justify-self: start; }
+  main .whitespace-nowrap { white-space: normal !important; }
+}
+
+/* ---------- Q-07 Cetak ---------- */
+@media print {
+  @page { size: A4; margin: 12mm; }
+  html, body { background: #fff !important; color: #000 !important; }
+  body * { background: #fff !important; color: #000 !important; box-shadow: none !important; text-shadow: none !important; }
+  header, nav, footer, #standalone-demo-note,
+  .kai-dock, .kai-pop, .kai-modal, .kai-banner, .kai-breadcrumb,
+  .kai-skip, .kai-table-hint, button, .kai-no-print,
+  .bn-head, .bn-grid, .bn-card, .bn-src, .bn-foot, .bn-link, .bn-live { display: none !important; }
+  main { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+  main h1 { font-size: 16pt !important; margin: 0 0 6pt !important; }
+  main h2, main h3 { font-size: 12pt !important; margin: 10pt 0 4pt !important; }
+  main p, main li { font-size: 9.5pt !important; line-height: 1.45 !important; }
+  table { font-size: 7.5pt !important; border-collapse: collapse !important; width: 100% !important; }
+  th, td { border: 1px solid #999 !important; padding: 2pt 3pt !important; vertical-align: top !important; }
+  thead { display: table-header-group; }
+  tr { page-break-inside: avoid; }
+  .kai-table-wrap, .vn-scroll { overflow: visible !important; max-height: none !important; border: 0 !important; }
+  /* URL eksternal tidak dicetak agar laporan tetap ringkas */
+  h1, h2, h3 { page-break-after: avoid; }
+  body.kai-print-ringkas table,
+  body.kai-print-ringkas .kai-table-wrap,
+  body.kai-print-ringkas .vn-scroll { display: none !important; }
+  body.kai-print-ringkas::after {
+    content: "Tabel panjang dilewati pada mode cetak ringkas. Gunakan Cetak lengkap untuk seluruh tabel.";
+    display: block; margin-top: 10pt; font: italic 8pt/1.4 Georgia, serif; color: #555;
+  }
+}
+
+/* ---------- Hormati preferensi gerak ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+}
+
+/* ===== LAPISAN 2 — register, cadangan, status aksi, mode badge ===== */
+.kai-mode-badge {
+  display: flex; align-items: center; gap: 6px;
+  margin: 6px 0 0; font: 600 12.5px/1.3 system-ui, sans-serif;
+  color: #93a8c9; letter-spacing: .02em;
+}
+.kai-mode-dot { width: 7px; height: 7px; border-radius: 50%; background: #fbbf24; }
+.kai-mode-badge.is-gas { color: #86efac; }
+.kai-mode-badge.is-gas .kai-mode-dot { background: #34d399; }
+
+/* status aksi */
+.kai-act {
+  position: fixed; right: 12px; bottom: 12px; z-index: 90;
+  display: none; flex-direction: column; gap: 3px;
+  min-width: 210px; max-width: 300px;
+  background: #0f1a2c; border: 1px solid #2b4370; border-radius: 12px;
+  padding: 8px 10px; box-shadow: 0 18px 40px rgba(0,0,0,.5);
+}
+.kai-act.is-on { display: flex; }
+.kai-act-head {
+  font: 800 12.5px/1.3 system-ui, sans-serif; color: #c9d8ef;
+  text-transform: uppercase; letter-spacing: .06em; margin-bottom: 2px;
+}
+.kai-act-row {
+  display: grid; grid-template-columns: 8px 1fr auto; align-items: center;
+  gap: 6px; font: 600 12.5px/1.35 system-ui, sans-serif; color: #a9bcd9;
+}
+.kai-act-dot { width: 7px; height: 7px; border-radius: 50%; }
+.kai-act-time { font: 600 12.5px/1.3 ui-monospace, monospace; color: #6d84a6; }
+.kai-act-retry {
+  margin-top: 5px; padding: 5px 8px; border-radius: 8px;
+  border: 1px solid #b45309; background: #3a2410; color: #fcd34d;
+  font: 700 12.5px/1.3 system-ui, sans-serif; cursor: pointer;
+}
+.kai-act-retry:hover { border-color: #f59e0b; }
+
+/* banner lapisan 2 */
+#kai-banner2 {
+  position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%) translateY(14px);
+  z-index: 95; display: none; align-items: center; gap: 12px;
+  max-width: calc(100vw - 24px); padding: 10px 14px;
+  background: #16233a; border: 1px solid #2b4370; border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.55);
+  font: 600 13px/1.45 system-ui, sans-serif; color: #dbe7f8;
+}
+#kai-banner2.is-on { display: flex; }
+.kai-banner-btn {
+  padding: 6px 10px; border-radius: 8px; border: 1px solid #38bdf8;
+  background: #0e2b42; color: #7dd3fc; font: 700 12.5px/1.3 system-ui, sans-serif;
+  cursor: pointer; white-space: nowrap;
+}
+.kai-banner-btn:hover { background: #123a58; }
+
+/* register */
+.kai-reg-card { max-width: 980px; }
+.kai-reg-tabs { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 12px 0; border-bottom: 1px solid #22365c; }
+.kai-reg-tab {
+  padding: 6px 10px; border: 1px solid #22365c; border-bottom: 0;
+  border-radius: 8px 8px 0 0; background: transparent; color: #9fb0d0;
+  font: 700 12.5px/1.3 system-ui, sans-serif; cursor: pointer;
+}
+.kai-reg-tab[aria-selected="true"] { background: #0b1220; color: #7dd3fc; border-color: #38bdf8; }
+.kai-reg-wrap { overflow-x: auto; margin: 8px 0 4px; border: 1px solid #22365c; border-radius: 10px; }
+.kai-reg-table { width: 100%; border-collapse: collapse; font: 600 12.5px/1.45 system-ui, sans-serif; color: #c3d2e8; }
+.kai-reg-table th {
+  position: sticky; top: 0; background: #131f36; color: #9fb0d0;
+  text-align: left; padding: 7px 9px; border-bottom: 1px solid #2b4370;
+  font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap;
+}
+.kai-reg-table td { padding: 6px 9px; border-bottom: 1px solid #1b2b45; vertical-align: top; }
+.kai-reg-table tr:last-child td { border-bottom: 0; }
+.kai-reg-table code { font: 600 12.5px/1.4 ui-monospace, monospace; color: #7dd3fc; }
+.kai-reg-sel {
+  padding: 3px 5px; border-radius: 7px; border: 1px solid #2b4370;
+  background: #0b1220; color: #dbe7f8; font: 700 12.5px/1.3 system-ui, sans-serif;
+}
+.kai-reg-note { margin: 6px 0 10px; font: 600 12.5px/1.5 system-ui, sans-serif; color: #8fa8cf; }
+.kai-reg-note code { font: 600 12.5px/1.4 ui-monospace, monospace; color: #7dd3fc; }
+.kai-reg-yes { color: #34d399; font-weight: 800; }
+.kai-reg-no { color: #4b5f7d; }
+
+/* cadangan & code.gs */
+.kai-backup-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; margin: 10px 0; }
+.kai-backup-btn {
+  display: flex; flex-direction: column; gap: 2px; text-align: left;
+  padding: 10px 12px; border: 1px solid #2b4370; border-radius: 10px;
+  background: #0b1220; color: #dbe7f8; cursor: pointer;
+  font: 700 13px/1.35 system-ui, sans-serif;
+}
+.kai-backup-btn:hover { border-color: #38bdf8; background: #0e1a2e; }
+.kai-backup-btn span { font: 600 12.5px/1.35 system-ui, sans-serif; color: #8fa8cf; }
+.kai-backup-out { margin-top: 10px; display: grid; gap: 4px; }
+.kai-backup-ok { font: 700 12.5px/1.4 system-ui, sans-serif; color: #34d399; margin: 0; }
+.kai-backup-bad { font: 700 12.5px/1.4 system-ui, sans-serif; color: #fca5a5; margin: 0; }
+.kai-backup-row { margin: 0; font: 600 12.5px/1.45 system-ui, sans-serif; color: #a9bcd9; }
+.kai-steps { margin: 8px 0 12px 18px; display: grid; gap: 4px; font: 600 12.5px/1.5 system-ui, sans-serif; color: #c3d2e8; }
+.kai-steps code { font: 600 12.5px/1.4 ui-monospace, monospace; color: #7dd3fc; }
+.kai-codegs-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; }
+
+@media print {
+  .kai-act, #kai-banner2, .kai-mode-badge, .kai-reg-tabs, .kai-backup-btn, .kai-modal { display: none !important; }
+}
+
+/* ===== LAPISAN 3 — kartu akses, register operasional ===== */
+.kai-card-login { margin-top: 6px; }
+.kai-card-login-inner {
+  border: 1px dashed #2b4370; border-radius: 10px; padding: 10px 12px;
+  background: #0b1220; display: grid; gap: 6px;
+}
+.kai-card-btn {
+  justify-self: start; padding: 7px 11px; border-radius: 9px;
+  border: 1px solid #38bdf8; background: #0e2b42; color: #7dd3fc;
+  font: 700 12.5px/1.35 system-ui, sans-serif; cursor: pointer;
+}
+.kai-card-btn:hover { background: #123a58; }
+.kai-card-hint { font: 600 12.5px/1.5 system-ui, sans-serif; color: #8fa8cf; }
+
+.kai-mini {
+  padding: 4px 8px; border-radius: 7px; border: 1px solid #2b4370;
+  background: #0b1220; color: #9fd3f5; font: 700 12.5px/1.3 system-ui, sans-serif;
+  cursor: pointer; white-space: nowrap;
+}
+.kai-mini:hover { border-color: #38bdf8; }
+.kai-del { color: #fca5a5; border-color: #5b2c2c; }
+
+.kai-inp {
+  width: 100%; box-sizing: border-box; padding: 5px 7px;
+  border: 1px solid #2b4370; border-radius: 7px; background: #0b1220;
+  color: #dbe7f8; font: 600 12.5px/1.4 system-ui, sans-serif;
+}
+.kai-inp:focus { outline: 2px solid #38bdf8; outline-offset: 1px; }
+.kai-num { text-align: right; }
+.kai-rp { font-variant-numeric: tabular-nums; white-space: nowrap; color: #93c5fd; }
+
+.kai-due-late td { background: rgba(127, 29, 29, .35); }
+.kai-due-soon td { background: rgba(120, 53, 15, .28); }
+
+.kai-total {
+  display: flex; align-items: center; justify-content: space-between;
+  margin: 12px 0 8px; padding: 10px 12px; border: 1px solid #2b4370;
+  border-radius: 10px; background: #0b1220;
+  font: 700 13px/1.4 system-ui, sans-serif; color: #c9d8ef;
+}
+.kai-total b { font-size: 16px; color: #7dd3fc; }
+.kai-skenario { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px; margin-bottom: 8px; }
+.kai-sken {
+  display: flex; flex-direction: column; gap: 2px; padding: 8px 10px;
+  border: 1px solid #22365c; border-radius: 9px; background: #0f1a2c;
+}
+.kai-sken span { font: 600 12.5px/1.3 system-ui, sans-serif; color: #8fa8cf; }
+.kai-sken b { font: 700 13px/1.35 system-ui, sans-serif; color: #dbe7f8; }
+
+.kai-sop { border: 1px solid #22365c; border-radius: 10px; padding: 10px 12px; margin: 8px 0; background: #0b1220; }
+.kai-sop h3 { margin: 0 0 6px; font: 800 13px/1.35 system-ui, sans-serif; color: #c9d8ef; }
+.kai-sop pre { margin: 0; white-space: pre-wrap; font: 600 12.5px/1.6 system-ui, sans-serif; color: #a9bcd9; }
+
+.kai-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.kai-cols h3 { margin: 0 0 6px; font: 800 12.5px/1.4 system-ui, sans-serif; color: #c9d8ef; }
+.kai-chk { width: 16px; height: 16px; accent-color: #38bdf8; }
+
+.kai-file-in {
+  padding: 8px 10px; border: 1px dashed #2b4370; border-radius: 9px;
+  background: #0b1220; color: #a9bcd9; font: 600 12.5px/1.4 system-ui, sans-serif;
+  width: 100%; box-sizing: border-box; margin-bottom: 8px;
+}
+.kai-field { display: grid; gap: 3px; margin: 0 0 10px; }
+.kai-field span { font: 700 12.5px/1.3 system-ui, sans-serif; color: #9fb0d0; }
+
+@media print {
+  .kai-card-login, .kai-mini, .kai-file-in, .kai-inp, .kai-total, .kai-skenario { display: none !important; }
+}
+
+/* ===== LAPISAN 4 — gerbang akses per halaman ===== */
+/* overlay position:fixed dihapus — kartu kunci kini inline (.kai-gate-inline di #kai-access-css) */
+.kai-gate-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* ===== IFRAME HOST & EMBEDDED PAGE STYLES ===== */
+#kai-iframe-host {
+  width: 100%;
+  position: relative;
+}
+.kai-iframe-wrap {
+  position: relative;
+  width: 100%;
+}
+.kai-iframe-wrap.is-hidden {
+  display: none !important;
+}
+.kai-page-frame {
+  width: 100%;
+  min-height: 540px;
+  border: 0;
+  display: block;
+  background: transparent;
+  overflow: hidden;
+  transition: height 0.15s ease;
+}
+.kai-iframe-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 20px;
+  margin-bottom: 12px;
+  background: #0f1a2c;
+  border: 1px solid #22365c;
+  border-radius: 12px;
+  color: #9fb0d0;
+  font: 600 13px/1.4 system-ui, sans-serif;
+}
+.kai-iframe-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #22365c;
+  border-top-color: #38bdf8;
+  border-radius: 50%;
+  animation: kai-spin 0.8s linear infinite;
+}
+@keyframes kai-spin {
+  to { transform: rotate(360deg); }
+}
+body.kai-embed-page {
+  background: #0b1220;
+  color: #e8eefc;
+  margin: 0;
+  padding: 0;
+  min-height: auto !important;
+  overflow-x: hidden;
+}
+.kai-standalone-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 16px;
+  background: #0f1a2c;
+  border-bottom: 1px solid #22365c;
+  font: 600 12.5px/1.4 system-ui, sans-serif;
+  color: #9fb0d0;
+}
+.kai-standalone-bar a {
+  color: #7dd3fc;
+  text-decoration: none;
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 1px solid #2b4370;
+  background: #182845;
+  font-weight: 700;
+}
+.kai-standalone-bar a:hover {
+  border-color: #38bdf8;
+  color: #e8eefc;
+}
+@media print {
+  .kai-iframe-loading, .kai-standalone-bar { display: none !important; }
+}
+
+/* ---------- Unified Portal Header & Footer ---------- */
+.portal-brand-tag {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.portal-brand-name {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #6ee7b7;
+  background: #0d2b21;
+  border: 1px solid #175c49;
+  padding: 2px 9px;
+  border-radius: 999px;
+}
+.portal-brand-slogan {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #7dd3fc;
+}
+.portal-tab-ext {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 11px;
+  border-radius: 8px;
+  border: 1px solid #175c49;
+  background: #0d2b21;
+  color: #6ee7b7;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.portal-tab-ext:hover {
+  border-color: #34d399;
+  color: #ffffff;
+}
+.portal-ftr {
+  border-top: 1px solid #22365c;
+  background: #09101d;
+  padding: 28px 20px 88px;
+  margin-top: 24px;
+}
+.portal-ftr-in {
+  max-width: 1240px;
+  margin: 0 auto;
+}
+.portal-ftr-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 22px;
+}
+.portal-ftr-col h3 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #7dd3fc;
+}
+.portal-ftr-col p {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  color: #9fb0d0;
+  line-height: 1.6;
+}
+.portal-ftr-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 7px;
+}
+.portal-ftr-list a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #cfe0ff;
+  text-decoration: none;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+.portal-ftr-list a:hover {
+  color: #38bdf8;
+  text-decoration: underline;
+}
+.portal-ftr-bottom {
+  margin-top: 22px;
+  padding-top: 14px;
+  border-top: 1px solid #1b2c4b;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #9fb0d0;
+}
+@media (max-width: 920px) {
+  .portal-ftr-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .portal-ftr { padding: 22px 14px 88px; }
+  .portal-ftr-grid { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+}
+

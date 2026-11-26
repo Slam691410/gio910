@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Konsol Full DAO — Gio910Token &amp; Gio910Governor (On-Chain)</title>
+    <style>
+      :root { --bg: #0b1220; --card: #131f36; --bd: #22365c; --tx: #e8eefc; --mt: #9fb0d0; --ac: #38bdf8; --ok: #34d399; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--tx); font: 14px/1.5 system-ui, -apple-system, sans-serif; }
+      .wrap { max-width: 980px; margin: 0 auto; padding: 18px 14px 64px; }
+      .card { background: var(--card); border: 1px solid var(--bd); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+      h1 { margin: 0 0 6px; font-size: 20px; }
+      h2 { margin: 0 0 10px; font-size: 15px; color: #7dd3fc; }
+      .muted { color: var(--mt); font-size: 13px; margin: 0; }
+      .row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; align-items: center; }
+      input, textarea { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #2b4370; background: #0b1220; color: #fff; font: 13px ui-monospace, monospace; }
+      .row > input { flex: 1 1 220px; width: auto; }
+      button { padding: 10px 14px; border-radius: 8px; border: 1px solid var(--ac); background: var(--ac); color: #052230; font-weight: 800; font-size: 13px; cursor: pointer; }
+      button.sec { background: #182845; border-color: #2b4370; color: #cfe0ff; }
+      button.ok { background: var(--ok); border-color: var(--ok); color: #052e22; }
+      .prop { border: 1px solid #2b4370; background: #0f1a2c; border-radius: 12px; padding: 14px; margin-top: 10px; }
+      code { background: #080e1a; padding: 2px 6px; border-radius: 5px; font-size: 12px; color: #fbbf24; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <h1>Full DAO On-Chain Console (<code>Gio910Governor</code>)</h1>
+        <p class="muted">Menggantikan login OTP &amp; Google Apps Script dengan dompet Web3 (MetaMask), hak suara ERC20Votes, eksekusi kas Timelock otomatis, dan enkripsi AES-256-GCM sebelum arsip diunggah ke IPFS.</p>
+        <div class="row">
+          <button id="btn-connect" type="button">Hubungkan Dompet Web3</button>
+          <span id="wallet-info" class="muted">Belum terhubung</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>1. Alamat Kontrak Smart Contract</h2>
+        <div class="row">
+          <input id="inp-token" type="text" placeholder="Alamat Gio910Token (0x...)" />
+          <input id="inp-gov" type="text" placeholder="Alamat Gio910Governor (0x...)" />
+        </div>
+        <div class="row">
+          <button id="btn-status" type="button">Cek Saldo &amp; Hak Suara</button>
+          <button id="btn-delegate" type="button" class="ok">Aktifkan Hak Suara Saya (Delegate)</button>
+          <button id="btn-load-props" type="button" class="sec">Muat Proposal On-Chain</button>
+        </div>
+        <p id="gov-status" class="muted" style="margin-top:8px">Isi alamat kontrak hasil deploy dari Remix IDE / Foundry lalu klik Cek Saldo &amp; Hak Suara.</p>
+      </div>
+
+      <div class="card">
+        <h2>2. Ajukan Proposal Pengeluaran Kas Timelock (On-Chain)</h2>
+        <div class="row">
+          <input id="inp-to" type="text" placeholder="Alamat penerima dana (0x...)" />
+          <input id="inp-eth" type="text" placeholder="Jumlah ETH / native token (mis. 0.05)" />
+        </div>
+        <div style="margin-top:8px">
+          <textarea id="inp-desc" rows="3" placeholder="Judul & rincian proposal (misal: Pencairan Dana Operasional Q1 2027)"></textarea>
+        </div>
+        <div class="row">
+          <button id="btn-propose" type="button">Kirim Proposal ke Blockchain</button>
+        </div>
+        <p id="prop-tx" class="muted" style="margin-top:8px"></p>
+      </div>
+
+      <div class="card">
+        <h2>3. Daftar Proposal &amp; Voting On-Chain</h2>
+        <div id="props-box"><p class="muted">Belum ada proposal dimuat.</p></div>
+      </div>
+
+      <div class="card">
+        <h2>4. Enkripsi / Dekripsi Dokumen Sebelum Upload ke IPFS (4EVERLAND / Pinata)</h2>
+        <p class="muted">Karena file di IPFS dapat dibaca siapa saja yang tahu CID-nya, enkripsi file rahasia menjadi <code>.kaienc</code> dulu di perangkat Anda sebelum diunggah.</p>
+        <div class="row">
+          <input id="inp-file" type="file" />
+          <input id="inp-pass" type="password" placeholder="Kata sandi enkripsi (min. 8 huruf)" />
+        </div>
+        <div class="row">
+          <button id="btn-enc" type="button" class="ok">Enkripsi &amp; Unduh (.kaienc)</button>
+          <button id="btn-dec" type="button" class="sec">Dekripsi File (.kaienc → Asli)</button>
+        </div>
+        <p id="enc-msg" class="muted" style="margin-top:8px"></p>
+      </div>
+    </div>
+
+    <script type="module">
+      import * as ethers from "https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.min.js";
+      import {
+        connectWeb3Wallet,
+        getGovernanceStatus,
+        delegateSelf,
+        createEthTransferProposal,
+        castDaoVote,
+        queueOrExecuteProposal,
+        fetchRecentProposals,
+        encryptFileForIpfs,
+        decryptFileFromIpfs
+      } from "./dao-web3-adapter.js";
+
+      let session = null;
+      const esc = (s) => String(s || "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+      document.getElementById("btn-connect").addEventListener("click", async () => {
+        const info = document.getElementById("wallet-info");
+        try {
+          session = await connectWeb3Wallet(ethers);
+          info.textContent = `Terhubung: ${session.address.slice(0, 6)}…${session.address.slice(-4)} (Chain ID ${session.chainId})`;
+        } catch (err) {
+          info.textContent = err.message || String(err);
+        }
+      });
+
+      document.getElementById("btn-status").addEventListener("click", async () => {
+        const out = document.getElementById("gov-status");
+        try {
+          if (!session) session = await connectWeb3Wallet(ethers);
+          const token = document.getElementById("inp-token").value.trim();
+          const st = await getGovernanceStatus(ethers, session.provider, token, session.address);
+          out.textContent = `Saldo: ${st.balanceFormatted} ${st.symbol} · Hak Suara Aktif: ${st.votesFormatted} · Delegasi ke: ${st.delegatee}`;
+        } catch (err) {
+          out.textContent = "Error: " + (err.message || err);
+        }
+      });
+
+      document.getElementById("btn-delegate").addEventListener("click", async () => {
+        const out = document.getElementById("gov-status");
+        try {
+          if (!session) session = await connectWeb3Wallet(ethers);
+          const token = document.getElementById("inp-token").value.trim();
+          out.textContent = "Menunggu konfirmasi transaksi delegate di dompet…";
+          await delegateSelf(ethers, session.signer, token);
+          out.textContent = "Berhasil delegate! Hak suara Anda sekarang aktif untuk voting.";
+        } catch (err) {
+          out.textContent = "Gagal delegate: " + (err.message || err);
+        }
+      });
+
+      document.getElementById("btn-propose").addEventListener("click", async () => {
+        const out = document.getElementById("prop-tx");
+        try {
+          if (!session) session = await connectWeb3Wallet(ethers);
+          const gov = document.getElementById("inp-gov").value.trim();
+          const to = document.getElementById("inp-to").value.trim();
+          const eth = document.getElementById("inp-eth").value.trim();
+          const desc = document.getElementById("inp-desc").value.trim();
+          out.textContent = "Mengirim proposal ke blockchain…";
+          const res = await createEthTransferProposal(ethers, session.signer, gov, to, eth, desc);
+          out.textContent = "Proposal tercatat! Tx Hash: " + res.txHash;
+        } catch (err) {
+          out.textContent = "Gagal membuat proposal: " + (err.message || err);
+        }
+      });
+
+      document.getElementById("btn-load-props").addEventListener("click", async () => {
+        const box = document.getElementById("props-box");
+        try {
+          if (!session) session = await connectWeb3Wallet(ethers);
+          const gov = document.getElementById("inp-gov").value.trim();
+          box.innerHTML = '<p class="muted">Mengambil event ProposalCreated…</p>';
+          const items = await fetchRecentProposals(ethers, session.provider, gov);
+          if (!items.length) {
+            box.innerHTML = '<p class="muted">Belum ada proposal ditemukan pada 50.000 blok terakhir.</p>';
+            return;
+          }
+          box.innerHTML = items.map((p, idx) => `
+            <div class="prop" data-idx="${idx}">
+              <div><b>#${esc(p.proposalId.slice(0, 10))}…</b> — <span style="color:#7dd3fc">${esc(p.stateLabel)}</span></div>
+              <p class="muted" style="margin-top:4px">${esc(p.description)}</p>
+              <div class="muted" style="margin-top:6px">Setuju: <b>${esc(p.forVotes)}</b> · Tolak: <b>${esc(p.againstVotes)}</b> · Abstain: <b>${esc(p.abstainVotes)}</b></div>
+              <div class="row">
+                <button type="button" class="ok" data-vote="1" data-pid="${esc(p.proposalId)}">Vote Setuju</button>
+                <button type="button" class="sec" data-vote="0" data-pid="${esc(p.proposalId)}">Vote Tolak</button>
+                <button type="button" class="sec" data-act="queue" data-idx="${idx}">Queue</button>
+                <button type="button" class="sec" data-act="execute" data-idx="${idx}">Execute</button>
+              </div>
+            </div>`).join("");
+
+          box.querySelectorAll("[data-vote]").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+              const pid = btn.getAttribute("data-pid");
+              const support = Number(btn.getAttribute("data-vote"));
+              await castDaoVote(ethers, session.signer, gov, pid, support, "");
+              alert("Vote berhasil dikirim!");
+            });
+          });
+          box.querySelectorAll("[data-act]").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+              const item = items[Number(btn.getAttribute("data-idx"))];
+              const act = btn.getAttribute("data-act");
+              await queueOrExecuteProposal(ethers, session.signer, gov, act, item.targets, item.values, item.calldatas, item.description);
+              alert("Transaksi " + act + " berhasil!");
+            });
+          });
+        } catch (err) {
+          box.innerHTML = `<p class="muted">Gagal memuat proposal: ${esc(err.message || err)}</p>`;
+        }
+      });
+
+      function triggerDownload(bytes, filename) {
+        const blob = new Blob([bytes], { type: "application/octet-stream" });
+        const u = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = u;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(u), 4000);
+      }
+
+      document.getElementById("btn-enc").addEventListener("click", async () => {
+        const msg = document.getElementById("enc-msg");
+        try {
+          const f = document.getElementById("inp-file").files[0];
+          const pass = document.getElementById("inp-pass").value;
+          if (!f) throw new Error("Pilih file terlebih dahulu.");
+          const buf = await f.arrayBuffer();
+          const out = await encryptFileForIpfs(buf, pass);
+          triggerDownload(out, f.name + ".kaienc");
+          msg.textContent = `Berhasil mengenkripsi ${f.name} (${out.length} byte). Unggah file .kaienc ke IPFS.`;
+        } catch (err) {
+          msg.textContent = "Error: " + (err.message || err);
+        }
+      });
+
+      document.getElementById("btn-dec").addEventListener("click", async () => {
+        const msg = document.getElementById("enc-msg");
+        try {
+          const f = document.getElementById("inp-file").files[0];
+          const pass = document.getElementById("inp-pass").value;
+          if (!f) throw new Error("Pilih file .kaienc terlebih dahulu.");
+          const buf = await f.arrayBuffer();
+          const plain = await decryptFileFromIpfs(buf, pass);
+          const origName = f.name.endsWith(".kaienc") ? f.name.slice(0, -7) : "decrypted-" + f.name;
+          triggerDownload(plain, origName);
+          msg.textContent = `Berhasil mendekripsi ${origName}!`;
+        } catch (err) {
+          msg.textContent = "Gagal mendekripsi (pastikan sandi benar): " + (err.message || err);
+        }
+      });
+    </script>
+  </body>
+</html>
