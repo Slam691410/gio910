@@ -1,0 +1,115 @@
+_format_version: "3.0"
+
+services:
+  - name: supabase-auth
+    url: http://supabase-auth:9999
+    routes:
+      - name: supabase-auth-route
+        paths: ["/auth/v1"]
+        strip_path: false
+
+  - name: supabase-storage
+    url: http://supabase-storage:5000
+    routes:
+      - name: supabase-storage-route
+        paths: ["/storage/v1"]
+        strip_path: false
+
+  - name: supabase-realtime
+    url: http://supabase-realtime:4000
+    routes:
+      - name: supabase-realtime-route
+        paths: ["/realtime/v1"]
+        strip_path: false
+
+  - name: supabase-rest
+    url: http://supabase-db:5432
+    routes:
+      - name: supabase-rest-route
+        paths: ["/rest/v1"]
+        strip_path: false
+
+  - name: supabase-graphql
+    url: http://supabase-db:5432
+    routes:
+      - name: supabase-graphql-route
+        paths: ["/graphql/v1"]
+        strip_path: false
+
+  - name: supabase-functions
+    url: http://edge-function:8500
+    routes:
+      - name: supabase-functions-route
+        paths: ["/functions/v1"]
+        strip_path: false
+
+  - name: supabase-studio
+    url: http://supabase-studio:3000
+    routes:
+      - name: supabase-studio-route
+        paths: ["/", "/dashboard", "/auth", "/storage", "/sql"]
+        strip_path: false
+
+consumers:
+  - username: anonymous
+    keyauth_credentials:
+      - key: "${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9}"
+
+plugins:
+  - name: cors
+    config:
+      origins:
+        - "*"
+      methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+        - PATCH
+      headers:
+        - authorization
+        - content-type
+        - x-client-info
+        - apikey
+      exposed_headers:
+        - content-length
+        - content-range
+      credentials: true
+      max_age: 86400
+      preflight_continue: false
+
+  - name: key-auth
+    config:
+      key_names:
+        - apikey
+      hide_credentials: false
+    service: supabase-auth
+
+  - name: key-auth
+    config:
+      key_names:
+        - apikey
+      hide_credentials: false
+    service: supabase-storage
+
+  - name: key-auth
+    config:
+      key_names:
+        - apikey
+      hide_credentials: false
+    service: supabase-realtime
+
+  - name: key-auth
+    config:
+      key_names:
+        - apikey
+      hide_credentials: false
+    service: supabase-rest
+
+  - name: key-auth
+    config:
+      key_names:
+        - apikey
+      hide_credentials: false
+    service: supabase-graphql

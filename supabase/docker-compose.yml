@@ -1,0 +1,164 @@
+version: '3.8'
+
+services:
+  # Supabase Database (PostgreSQL)
+  supabase-db:
+    image: supabase/postgres:15.1.0.73
+    container_name: gio910-supabase-db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    volumes:
+      - supabase-db-data:/var/lib/postgresql/data
+      - ./sql:/docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_PASSWORD: ${SUPABASE_DB_PASSWORD:-postgres}
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+    networks:
+      - gio910-network
+
+  # Supabase Studio (Dashboard)
+  supabase-studio:
+    image: supabase/studio:2024-04-15-6f0cfe9
+    container_name: gio910-supabase-studio
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - supabase-db
+    environment:
+      STUDIO_PG_META_URL: postgres://postgres:${SUPABASE_DB_PASSWORD:-postgres}@supabase-db:5432/postgres
+      SUPABASE_PUBLIC_URL: http://localhost:3000
+      SUPABASE_URL: http://localhost:3000
+    networks:
+      - gio910-network
+
+  # Supabase Auth
+  supabase-auth:
+    image: supabase/gotrue:2.130.0
+    container_name: gio910-supabase-auth
+    restart: unless-stopped
+    ports:
+      - "9999:9999"
+    depends_on:
+      - supabase-db
+    environment:
+      GOTRUE_JWT_SECRET: ${GOTRUE_JWT_SECRET:-supersecretjwtsecret}
+      GOTRUE_JWT_EXP: 3600
+      GOTRUE_JWT_ALG: HS256
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://postgres:${SUPABASE_DB_PASSWORD:-postgres}@supabase-db:5432/postgres?sslmode=disable
+      GOTRUE_SITE_URL: http://localhost:3000
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+    networks:
+      - gio910-network
+
+  # Supabase Storage
+  supabase-storage:
+    image: supabase/storage-api:0.47.0
+    container_name: gio910-supabase-storage
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    depends_on:
+      - supabase-db
+    environment:
+      STORAGE_DB_DRIVER: postgres
+      STORAGE_DB_DATABASE_URL: postgres://postgres:${SUPABASE_DB_PASSWORD:-postgres}@supabase-db:5432/postgres?sslmode=disable
+      STORAGE_FILE_SIZE_LIMIT: 52428800
+      STORAGE_API_HOST: 0.0.0.0
+      STORAGE_API_PORT: 5000
+    networks:
+      - gio910-network
+
+  # Supabase Realtime
+  supabase-realtime:
+    image: supabase/realtime:2.24.0
+    container_name: gio910-supabase-realtime
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    depends_on:
+      - supabase-db
+    environment:
+      REPLICA_DB_URL: postgres://postgres:${SUPABASE_DB_PASSWORD:-postgres}@supabase-db:5432/postgres
+      REPLICA_PASSWORD: ${SUPABASE_DB_PASSWORD:-postgres}
+      JWT_SECRET: ${GOTRUE_JWT_SECRET:-supersecretjwtsecret}
+      JWT_EXP: 3600
+      API_HOST: 0.0.0.0
+      API_PORT: 4000
+    networks:
+      - gio910-network
+
+  # Kong API Gateway (untuk Supabase)
+  supabase-kong:
+    image: kong:3.6.0
+    container_name: gio910-supabase-kong
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+      - "8443:8443"
+      - "8001:8001"
+    depends_on:
+      - supabase-auth
+      - supabase-storage
+      - supabase-realtime
+    environment:
+      KONG_DATABASE: off
+      KONG_DECLARATIVE_CONFIG: /opt/kong/kong.yml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+    volumes:
+      - ./kong:/opt/kong
+    networks:
+      - gio910-network
+
+  # Edge Function Runtime (Deno)
+  edge-function:
+    image: denoland/deno:1.41.0
+    container_name: gio910-edge-function
+    restart: unless-stopped
+    ports:
+      - "8500:8500"
+    volumes:
+      - ./functions:/app/functions
+    working_dir: /app
+    command: ["deno", "run", "--allow-net", "--allow-env", "--allow-read", "--allow-write", "-A", "functions/gio910-api/index.ts"]
+    environment:
+      SUPABASE_URL: http://localhost:3000
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9}
+      GOOGLE_SERVICE_ACCOUNT_EMAIL: ${GOOGLE_SERVICE_ACCOUNT_EMAIL}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${GOOGLE_SERVICE_ACCOUNT_KEY}
+      LINEAR_API_KEY: ${LINEAR_API_KEY}
+      NOTION_API_KEY: ${NOTION_API_KEY}
+    networks:
+      - gio910-network
+
+  # Nginx Reverse Proxy (Opsional)
+  nginx:
+    image: nginx:1.25.3
+    container_name: gio910-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - supabase-kong
+      - supabase-studio
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - ./ssl:/etc/nginx/ssl
+    networks:
+      - gio910-network
+
+volumes:
+  supabase-db-data:
+
+networks:
+  gio910-network:
+    driver: bridge
