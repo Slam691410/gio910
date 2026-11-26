@@ -1,0 +1,25 @@
+name: Verify All Opsi Builds (GIO910)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-all-targets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build all targets (opsi1, opsi3, opsi4, opsi5, blog)
+        run: |
+          chmod +x scripts/build-opsi.sh
+          bash scripts/build-opsi.sh all
+          test -f dist-opsi1/index.html
+          test -f dist-opsi3/index.html
+          test -f dist-opsi3/pages/unduh.html
+          test ! -f dist-opsi3/copy-hub.html
+          test -f dist-opsi4/index.html
+          test -f dist-opsi5/index.html
+          test -f dist-blog/index.html
+          echo "Semua target Opsi 1, 3, 4, 5 & gio910.blog valid!"

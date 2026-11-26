@@ -1,0 +1,11 @@
+.DS_Store
+Thumbs.db
+*.bak
+*.tmp
+node_modules/
+dist-opsi1/
+dist-opsi3/
+dist-opsi4/
+dist-opsi5/
+dist-blog/
+*.zip

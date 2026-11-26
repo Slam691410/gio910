@@ -1,0 +1,58 @@
+<script>
+(function () {
+  "use strict";
+  async function gunzipBase64(b64) {
+    var bin = atob(b64.replace(/\s+/g, ""));
+    var bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    var ds = new DecompressionStream("gzip");
+    var stream = new Blob([bytes]).stream().pipeThrough(ds);
+    return await new Response(stream).text();
+  }
+  function collectGroup(prefix) {
+    var els = document.querySelectorAll('script[data-kai-gz="' + prefix + '"]');
+    var out = "";
+    for (var i = 0; i < els.length; i++) out += els[i].textContent || "";
+    return out;
+  }
+  function addStyle(css) {
+    if (!css) return;
+    var st = document.createElement("style");
+    st.textContent = css;
+    document.head.appendChild(st);
+  }
+  function addScript(js) {
+    if (!js) return;
+    var sc = document.createElement("script");
+    sc.textContent = js;
+    document.body.appendChild(sc);
+  }
+  async function boot() {
+    try {
+      var tw = collectGroup("gz_tailwind");
+      var th = collectGroup("gz_theme");
+      if (tw) addStyle(await gunzipBase64(tw));
+      if (th) addStyle(await gunzipBase64(th));
+
+      var be = collectGroup("gz_backend");
+      if (be) addScript(await gunzipBase64(be));
+
+      var app = collectGroup("gz_app");
+      if (app) { addScript(await gunzipBase64(app)); window.dispatchEvent(new Event("resize")); }
+
+      var ext = collectGroup("gz_ext");
+      if (ext) addScript(await gunzipBase64(ext));
+
+      if (window.__KAI_EMBED_PAGE__ && window.__kaiPageBridgeBoot) {
+        window.__kaiPageBridgeBoot();
+      }
+    } catch (err) {
+      var root = document.getElementById("root");
+      if (root) {
+        root.innerHTML = '<div style="padding:20px;margin:20px;background:#2b1414;border:1px solid #5b2c2c;border-radius:10px;color:#fca5a5;font:13px/1.5 system-ui">Gagal memuat bundel: ' + String(err && err.message || err) + '</div>';
+      }
+    }
+  }
+  boot();
+})();
+</script>
