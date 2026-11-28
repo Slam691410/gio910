@@ -1,0 +1,328 @@
+/* Unified Navigation, Global Figma Design Tokens & Contextual Connector Bar for GIO910 */
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;600;700;800&display=swap');
+
+:root {
+  --gio-accent: #38bdf8;
+  --gio-accent-2: #34d399;
+  --gio-accent-soft: rgba(56, 189, 248, 0.16);
+  --gio-accent-border: rgba(56, 189, 248, 0.42);
+  --gio-accent-ink: #082f49;
+  --gio-accent-grad: linear-gradient(135deg, #38bdf8, #14b8a6);
+}
+html[data-gio-figma-preset="fuschia-100"] {
+  --gio-accent: #EF5DA8;
+  --gio-accent-2: #F178B6;
+  --gio-accent-soft: rgba(239, 93, 168, 0.18);
+  --gio-accent-border: rgba(241, 120, 182, 0.54);
+  --gio-accent-ink: #2b0719;
+  --gio-accent-grad: linear-gradient(135deg, #EF5DA8, #F178B6);
+}
+html[data-gio-figma-preset="iris-100"] {
+  --gio-accent: #7879F1;
+  --gio-accent-2: #5D5FEF;
+  --gio-accent-soft: rgba(93, 95, 239, 0.22);
+  --gio-accent-border: rgba(165, 166, 246, 0.56);
+  --gio-accent-ink: #0a0b33;
+  --gio-accent-grad: linear-gradient(135deg, #5D5FEF, #7879F1);
+}
+html[data-gio-figma-preset="fuschia-iris"] {
+  --gio-accent: #F178B6;
+  --gio-accent-2: #5D5FEF;
+  --gio-accent-soft: rgba(93, 95, 239, 0.22);
+  --gio-accent-border: rgba(239, 93, 168, 0.56);
+  --gio-accent-ink: #1a0728;
+  --gio-accent-grad: linear-gradient(135deg, #EF5DA8, #5D5FEF);
+}
+
+/* Global Figma Theme Propagation when non-default preset is active */
+html[data-gio-figma-preset]:not([data-gio-figma-preset="default"]) body {
+  --ac: var(--gio-accent);
+}
+html[data-gio-figma-preset]:not([data-gio-figma-preset="default"]) .hero,
+html[data-gio-figma-preset]:not([data-gio-figma-preset="default"]) .card {
+  border-color: var(--gio-accent-border);
+}
+html[data-gio-figma-preset]:not([data-gio-figma-preset="default"]) #kai-fin-fab {
+  background: var(--gio-accent-grad) !important;
+  border-color: var(--gio-accent) !important;
+  color: #fff !important;
+}
+html[data-gio-figma-preset]:not([data-gio-figma-preset="default"]) #kai-unified-hub .kuh-brand {
+  background: var(--gio-accent-soft);
+  border-color: var(--gio-accent-border);
+  color: #f8fafc;
+}
+html[data-gio-figma-preset="fuschia-100"] h1,
+html[data-gio-figma-preset="fuschia-100"] h2,
+html[data-gio-figma-preset="iris-100"] h1,
+html[data-gio-figma-preset="iris-100"] h2,
+html[data-gio-figma-preset="fuschia-iris"] h1,
+html[data-gio-figma-preset="fuschia-iris"] h2 {
+  text-decoration-color: var(--gio-accent);
+}
+html[data-gio-figma-font="work-sans"] body,
+html[data-gio-figma-font="work-sans"] button,
+html[data-gio-figma-font="work-sans"] input,
+html[data-gio-figma-font="work-sans"] select,
+html[data-gio-figma-font="work-sans"] textarea {
+  font-family: "Work Sans", system-ui, -apple-system, sans-serif !important;
+}
+
+#kai-unified-hub {
+  position: sticky;
+  top: 0;
+  z-index: 9990;
+  box-sizing: border-box;
+  width: 100%;
+  background: rgba(9, 14, 28, 0.96);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--gio-accent-border);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #e2e8f0;
+  padding: 7px 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+#kai-unified-hub .kuh-left,
+#kai-unified-hub .kuh-links,
+#kai-unified-hub .kuh-right {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+}
+#kai-unified-hub .kuh-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.18), rgba(16, 185, 129, 0.14));
+  border: 1px solid rgba(56, 189, 248, 0.42);
+  color: #bae6fd;
+  font-weight: 700;
+  font-size: 12px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+#kai-unified-hub .kuh-link {
+  padding: 4px 9px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #cbd5e1;
+  text-decoration: none;
+  border: 1px solid transparent;
+  background: rgba(30, 41, 59, 0.55);
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+#kai-unified-hub .kuh-link:hover {
+  background: var(--gio-accent-soft);
+  border-color: var(--gio-accent-border);
+  color: #ffffff;
+}
+#kai-unified-hub .kuh-link.is-active {
+  background: var(--gio-accent, #38bdf8);
+  color: var(--gio-accent-ink, #082f49);
+  border-color: var(--gio-accent, #38bdf8);
+  font-weight: 700;
+}
+#kai-unified-hub .kuh-conn-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--gio-accent-border);
+  background: var(--gio-accent-soft);
+  color: #f8fafc;
+  white-space: nowrap;
+}
+#kai-unified-hub .kuh-conn-btn:hover {
+  filter: brightness(1.12);
+}
+#kai-unified-hub .kuh-supa-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.9);
+  color: #cbd5e1;
+  white-space: nowrap;
+}
+#kai-unified-hub .kuh-supa-btn.is-ok {
+  border-color: rgba(16, 185, 129, 0.5);
+  background: rgba(16, 185, 129, 0.14);
+  color: #6ee7b7;
+}
+#kai-unified-hub .kuh-supa-btn.is-err {
+  border-color: rgba(239, 68, 68, 0.5);
+  background: rgba(239, 68, 68, 0.14);
+  color: #fca5a5;
+}
+#kai-unified-hub .kuh-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #f59e0b;
+  display: inline-block;
+}
+#kai-unified-hub .kuh-supa-btn.is-ok .kuh-dot { background: #10b981; }
+#kai-unified-hub .kuh-supa-btn.is-err .kuh-dot { background: #ef4444; }
+
+/* Contextual Connector Strip on Sub-Pages (pages/*.html) */
+.kcx-strip {
+  margin: 12px auto 16px;
+  max-width: 1120px;
+  background: linear-gradient(135deg, rgba(14, 23, 42, 0.96), rgba(17, 28, 52, 0.94));
+  border: 1px solid var(--gio-accent-border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  color: #e2e8f0;
+  font: 12.5px/1.45 system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 8px 24px rgba(2, 6, 23, 0.35);
+}
+.kcx-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.kcx-title {
+  font-weight: 800;
+  color: var(--gio-accent);
+  font-size: 13px;
+}
+.kcx-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.kcx-btn {
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid #2b4370;
+  background: #172847;
+  color: #dbeafe;
+  font-weight: 700;
+  font-size: 11.5px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.kcx-btn.prim {
+  background: var(--gio-accent);
+  border-color: var(--gio-accent);
+  color: var(--gio-accent-ink);
+}
+.kcx-btn.warn {
+  background: rgba(245, 158, 11, 0.16);
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #fcd34d;
+}
+.kcx-out {
+  font-size: 12px;
+  color: #bae6fd;
+  background: rgba(7, 13, 26, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 8px;
+  padding: 7px 10px;
+  display: none;
+}
+.kcx-out.is-shown { display: block; }
+
+#kuh-diag-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10020;
+  background: rgba(3, 7, 18, 0.72);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+#kuh-diag-modal.is-open { display: flex; }
+#kuh-diag-modal .kuh-card {
+  width: 100%;
+  max-width: 560px;
+  background: #0f172a;
+  border: 1px solid var(--gio-accent-border);
+  border-radius: 16px;
+  padding: 18px 20px;
+  color: #e2e8f0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+#kuh-diag-modal h3 { margin: 0 0 8px; font-size: 16px; color: var(--gio-accent); }
+#kuh-diag-modal pre {
+  background: #020617;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 12px;
+  overflow: auto;
+  max-height: 220px;
+  color: #cbd5e1;
+}
+#kuh-diag-modal .kuh-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+#kuh-diag-modal button, #kuh-diag-modal a.kuh-act {
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  border: 1px solid var(--gio-accent-border);
+  background: #1e293b;
+  color: #e2e8f0;
+}
+#kuh-diag-modal button.primary, #kuh-diag-modal a.kuh-act.primary {
+  background: var(--gio-accent);
+  color: var(--gio-accent-ink);
+  border-color: var(--gio-accent);
+}
+@media (max-width: 720px) {
+  #kai-unified-hub {
+    padding: 6px 10px;
+    box-sizing: border-box;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+  #kai-unified-hub .kuh-left,
+  #kai-unified-hub .kuh-links,
+  #kai-unified-hub .kuh-right {
+    max-width: 100%;
+    width: 100%;
+    flex-wrap: wrap !important;
+  }
+  #kai-unified-hub .kuh-link {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+}

@@ -26,13 +26,16 @@
       wrap.appendChild(table);
     });
     $$(".kai-table-wrap, .vn-scroll").forEach((wrap) => {
-      let hint = wrap.previousElementSibling;
-      if (hint && hint.classList && hint.classList.contains("kai-table-hint")) hint.remove();
-      if (wrap.scrollWidth > wrap.clientWidth + 2) {
-        hint = document.createElement("div");
+      const prev = wrap.previousElementSibling;
+      const hasHint = !!(prev && prev.classList && prev.classList.contains("kai-table-hint"));
+      const needHint = wrap.scrollWidth > wrap.clientWidth + 2;
+      if (needHint && !hasHint) {
+        const hint = document.createElement("div");
         hint.className = "kai-table-hint";
         hint.textContent = "Geser tabel horizontal →";
         wrap.parentNode.insertBefore(hint, wrap);
+      } else if (!needHint && hasHint) {
+        prev.remove();
       }
     });
   }
@@ -71,10 +74,27 @@
     }
   }
 
+  let obs = null;
+  let enhTimer = null;
+  let enhancing = false;
   function enhanceDom() {
-    wrapTables();
-    fixBadge();
-    sendHeight(false);
+    if (enhancing) return;
+    enhancing = true;
+    try {
+      wrapTables();
+      fixBadge();
+      sendHeight(false);
+    } finally {
+      if (obs) try { obs.takeRecords(); } catch (_) {}
+      enhancing = false;
+    }
+  }
+  function scheduleEnhance() {
+    if (enhTimer) return;
+    enhTimer = setTimeout(() => {
+      enhTimer = null;
+      enhanceDom();
+    }, 80);
   }
 
   window.addEventListener("message", (ev) => {
@@ -150,7 +170,7 @@
   function boot() {
     enhanceDom();
     try {
-      const obs = new MutationObserver(() => enhanceDom());
+      obs = new MutationObserver(() => scheduleEnhance());
       obs.observe(document.body, { childList: true, subtree: true });
     } catch (_) {}
     if (window.ResizeObserver) {

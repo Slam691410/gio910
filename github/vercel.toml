@@ -1,0 +1,285 @@
+[[headers]]
+source = "/sw.js"
+
+  [[headers.headers]]
+  key = "Service-Worker-Allowed"
+  value = "/"
+
+  [[headers.headers]]
+  key = "Cache-Control"
+  value = "no-cache"
+
+[[headers]]
+source = "/assets/kai-(security-v46|kyc-v47)\\.js"
+
+  [[headers.headers]]
+  key = "Cache-Control"
+  value = "no-store, must-revalidate"
+
+[[rewrites]]
+source = "/api/connectors/action"
+destination = "/api/connectors?sub=action"
+
+[[rewrites]]
+source = "/api/connectors/webhook"
+destination = "/api/connectors?sub=webhook"
+
+[[rewrites]]
+source = "/api/config"
+destination = "/api/connectors?sub=config"
+
+[[rewrites]]
+source = "/api/health"
+destination = "/api/connectors?sub=health"
+
+[[rewrites]]
+source = "/api/system-status"
+destination = "/api/connectors?sub=system-status"
+
+[[rewrites]]
+source = "/api/workspace"
+destination = "/api/connectors?sub=workspace"
+
+[[rewrites]]
+source = "/api/dao/proposals"
+destination = "/api/connectors?sub=dao"
+
+[[rewrites]]
+source = "/api/dao/vote"
+destination = "/api/connectors?sub=dao-vote"
+
+[[rewrites]]
+source = "/api/seo/inquiries"
+destination = "/api/connectors?sub=seo"
+
+[[rewrites]]
+source = "/api/copyhub/schedule"
+destination = "/api/connectors?sub=copyhub-schedule"
+
+[[rewrites]]
+source = "/api/copyhub/params"
+destination = "/api/connectors?sub=copyhub-params"
+
+[[rewrites]]
+source = "/api/copyhub/config"
+destination = "/api/connectors?sub=copyhub-config"
+
+[[rewrites]]
+source = "/api/copyhub/blog"
+destination = "/api/connectors?sub=copyhub-blog"
+
+[[rewrites]]
+source = "/api/absen"
+destination = "/api/connectors?sub=absen"
+
+[[rewrites]]
+source = "/api/attendance/checkin"
+destination = "/api/connectors?sub=attendance-checkin"
+
+[[rewrites]]
+source = "/api/absen/challenge"
+destination = "/api/connectors?sub=absen-challenge"
+
+[[rewrites]]
+source = "/api/auth/set-password"
+destination = "/api/connectors?sub=auth-set-password"
+
+[[rewrites]]
+source = "/api/auth/zip-issue"
+destination = "/api/connectors?sub=auth-zip-issue"
+
+[[rewrites]]
+source = "/api/auth/login-manual"
+destination = "/api/connectors?sub=auth-login-manual"
+
+[[rewrites]]
+source = "/api/auth/me"
+destination = "/api/connectors?sub=auth-me"
+
+[[rewrites]]
+source = "/api/kyc/me"
+destination = "/api/connectors?sub=kyc-me"
+
+[[rewrites]]
+source = "/api/kyc/enroll-face"
+destination = "/api/connectors?sub=kyc-enroll-face"
+
+[[rewrites]]
+source = "/api/kyc/enroll-voice"
+destination = "/api/connectors?sub=kyc-enroll-voice"
+
+[[rewrites]]
+source = "/api/kyc/submit-document"
+destination = "/api/connectors?sub=kyc-submit-document"
+
+[[rewrites]]
+source = "/api/kyc/list"
+destination = "/api/connectors?sub=kyc-list"
+
+[[rewrites]]
+source = "/api/kyc/inspect"
+destination = "/api/connectors?sub=kyc-inspect"
+
+[[rewrites]]
+source = "/api/kyc/review"
+destination = "/api/connectors?sub=kyc-review"
+
+[[rewrites]]
+source = "/api/stack/status"
+destination = "/api/connectors?sub=stack-status"
+
+[[rewrites]]
+source = "/api/stack/file"
+destination = "/api/connectors?sub=stack-file"
+
+[[rewrites]]
+source = "/copy-hub.html"
+destination = "/api/copy-hub"
+
+[[rewrites]]
+source = "/copy-hub"
+destination = "/api/copy-hub"
+
+[[rewrites]]
+source = "/assets/kai-app.js"
+destination = "/api/app-js"
+
+[[rewrites]]
+source = "/assets/kai-enhancements.js"
+destination = "/api/enhancements"
+
+[[rewrites]]
+source = "/assets/kai-holding-os.js"
+destination = "/api/connectors?sub=asset&name=kai-holding-os.js"
+
+[[rewrites]]
+source = "/assets/kai-holding-os.css"
+destination = "/api/connectors?sub=asset&name=kai-holding-os.css"
+
+[[rewrites]]
+source = "/assets/kai-realtime.js"
+destination = "/api/connectors?sub=asset&name=kai-realtime.js"
+
+[[rewrites]]
+source = "/assets/kai-connectors-hub.js"
+destination = "/api/connectors?sub=asset&name=kai-connectors-hub.js"
+
+[[rewrites]]
+source = "/assets/kai-live-finance.js"
+destination = "/api/connectors?sub=asset&name=kai-live-finance.js"
+
+[[rewrites]]
+source = "/assets/kai-unified-hub.js"
+destination = "/api/connectors?sub=asset&name=kai-unified-hub.js"
+
+[[rewrites]]
+source = "/assets/kai-unified-hub.css"
+destination = "/api/connectors?sub=asset&name=kai-unified-hub.css"
+
+[[rewrites]]
+source = "/assets/kai-supabase-bridge.js"
+destination = "/api/connectors?sub=asset&name=kai-supabase-bridge.js"
+
+[[rewrites]]
+source = "/pages/unduh.html"
+destination = "/api/connectors?sub=asset&name=pages-unduh.html"
+
+[[rewrites]]
+source = "/ekosistem.html"
+destination = "/api/connectors?sub=asset&name=ekosistem.html"
+
+[[rewrites]]
+source = "/dao/full/dao-full-console.html"
+destination = "/api/connectors?sub=asset&name=dao-full-console.html"
+
+[[rewrites]]
+source = "/dao/hybrid/dao-hybrid-widget.html"
+destination = "/api/connectors?sub=asset&name=dao-hybrid-widget.html"
+
+[[rewrites]]
+source = "/dao/hybrid/dao-hybrid-sync.ts"
+destination = "/api/connectors?sub=asset&name=dao-hybrid-sync.ts"
+
+[[rewrites]]
+source = "/dao/full/dao-web3-adapter.js"
+destination = "/api/connectors?sub=asset&name=dao-web3-adapter.js"
+
+[[rewrites]]
+source = "/dao/PANDUAN_HYBRID_DAN_FULL_DAO.md"
+destination = "/api/connectors?sub=asset&name=dao-panduan.md"
+
+[[rewrites]]
+source = "/seo/widget-ig-freename-kontak.html"
+destination = "/api/connectors?sub=asset&name=seo-widget.html"
+
+[[rewrites]]
+source = "/seo/konten-seo-artikel.md"
+destination = "/api/connectors?sub=asset&name=seo-artikel.md"
+
+[[rewrites]]
+source = "/scripts/build-opsi.sh"
+destination = "/api/connectors?sub=asset&name=build-opsi.sh"
+
+[[rewrites]]
+source = "/vercel-opsi2/PANDUAN_DOMAIN_CITRAHOST_VERCEL.md"
+destination = "/api/connectors?sub=asset&name=vercel-opsi2-panduan.md"
+
+[[rewrites]]
+source = "/README.md"
+destination = "/api/connectors?sub=asset&name=readme-md"
+
+[[rewrites]]
+source = "/assets/kai-copyhub-live.js"
+destination = "/api/connectors?sub=asset&name=kai-copyhub-live.js"
+
+[[rewrites]]
+source = "/manifest.webmanifest"
+destination = "/api/connectors?sub=asset&name=manifest.webmanifest"
+
+[[rewrites]]
+source = "/favicon.ico"
+destination = "/api/connectors?sub=asset&name=favicon.svg"
+
+[[rewrites]]
+source = "/assets/kai-page-bridge.js"
+destination = "/api/connectors?sub=asset&name=kai-page-bridge.js"
+
+[[rewrites]]
+source = "/assets/kai-mitigasi-data.js"
+destination = "https://cdn.jsdelivr.net/gh/Slam691410/gio910@aa5acfc327c478aa47c95f90cffa05eabe491cdf/github/assets/kai-mitigasi-data.js"
+
+[[rewrites]]
+source = "/assets/kai-backend.js"
+destination = "https://cdn.jsdelivr.net/gh/Slam691410/gio910@aa5acfc327c478aa47c95f90cffa05eabe491cdf/github/assets/kai-backend.js"
+
+[[rewrites]]
+source = "/assets/kai-access.js"
+destination = "https://cdn.jsdelivr.net/gh/Slam691410/gio910@aa5acfc327c478aa47c95f90cffa05eabe491cdf/github/assets/kai-access.js"
+
+[[rewrites]]
+source = "/assets/kai-theme.css"
+destination = "https://cdn.jsdelivr.net/gh/Slam691410/gio910@aa5acfc327c478aa47c95f90cffa05eabe491cdf/github/assets/kai-theme.css"
+
+[[rewrites]]
+source = "/assets/tailwind.css"
+destination = "https://cdn.jsdelivr.net/gh/Slam691410/gio910@aa5acfc327c478aa47c95f90cffa05eabe491cdf/github/assets/tailwind.css"
+
+[[rewrites]]
+source = "/assets/banner-gio910-olahan.jpg"
+destination = "https://cdn.jsdelivr.net/gh/Slam691410/gio910@aa5acfc327c478aa47c95f90cffa05eabe491cdf/github/assets/banner-gio910-olahan.jpg"
+
+[[rewrites]]
+source = "/assets/hero-aset-digital.jpg"
+destination = "https://cdn.jsdelivr.net/gh/Slam691410/gio910@aa5acfc327c478aa47c95f90cffa05eabe491cdf/github/assets/hero-aset-digital.jpg"
+
+[[rewrites]]
+source = "/assets/ilustrasi-web2-web3.jpg"
+destination = "https://cdn.jsdelivr.net/gh/Slam691410/gio910@aa5acfc327c478aa47c95f90cffa05eabe491cdf/github/assets/ilustrasi-web2-web3.jpg"
+
+[[rewrites]]
+source = "/dao/full/Gio910Governor.sol"
+destination = "https://cdn.jsdelivr.net/gh/Slam691410/gio910@aa5acfc327c478aa47c95f90cffa05eabe491cdf/github/dao/full/Gio910Governor.sol"
+
+[[rewrites]]
+source = "/dao/full/Gio910Token.sol"
+destination = "https://cdn.jsdelivr.net/gh/Slam691410/gio910@aa5acfc327c478aa47c95f90cffa05eabe491cdf/github/dao/full/Gio910Token.sol"

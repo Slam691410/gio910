@@ -49,7 +49,7 @@ Ya. Selain menaikkan nilai valuasi merek dan mempermudah akses pelanggan, domain
 **Bagaimana strategi agar halaman investasi dan branding berpeluang masuk peringkat atas Google?**  
 1. Terbitkan halaman HTML berstruktur SEO (`H1` tunggal, `H2/H3` rapi, Meta Tag + Schema JSON-LD `Article`, `FAQPage`, dan `LocalBusiness`).  
 2. Daftarkan domain ke **Google Search Console** dan kirim `sitemap.xml`.  
-3. Pastikan loading cepat (misalnya hosting di Cloudflare Pages).  
+3. Pastikan loading cepat (misalnya hosting di Vercel Edge CDN + Supabase Postgres).  
 4. Bangun tautan balik (*backlink* & sinyal lokal) dari profil Google Maps, TikTok, Instagram Reel, dan etalase Marketplace ke website Anda.
 
 ---

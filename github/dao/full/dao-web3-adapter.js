@@ -1,7 +1,8 @@
 /**
  * dao-web3-adapter.js — Adapter Web3 & Enkripsi Dokumen IPFS untuk Full DAO
- * Menggantikan ketergantungan login OTP / Google Apps Script ketika portal dijalankan
- * sebagai Full DAO murni (MetaMask/EIP-1193 + ERC20Votes + Governor + Timelock + IPFS AES-GCM).
+ * Menggantikan ketergantungan login OTP / Supabase sementara ketika portal dijalankan
+ * sebagai Full DAO murni (MetaMask/EIP-1193 + ERC20Votes + Governor + Timelock + IPFS AES-GCM),
+ * sambil tetap mendukung sinkronisasi log proposal ke Supabase gio910-api.
  *
  * Catatan: membutuhkan `ethers` v6 (tersedia via ESM CDN atau bundler Anda).
  */
