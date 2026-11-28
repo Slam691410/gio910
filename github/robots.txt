@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://gio910gerai.io/sitemap.xml
+Sitemap: https://gio910-jv38.vercel.app/sitemap.xml

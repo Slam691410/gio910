@@ -9,28 +9,29 @@
       * { box-sizing: border-box; }
       body { margin: 0; background: var(--bg); color: var(--tx); font: 14px/1.5 system-ui, -apple-system, sans-serif; }
       .wrap { max-width: 980px; margin: 0 auto; padding: 18px 14px 64px; }
-      .card { background: var(--card); border: 1px solid var(--bd); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+      .card { background: var(--card); border: 1px solid var(--gio-accent-border, var(--bd)); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
       h1 { margin: 0 0 6px; font-size: 20px; }
-      h2 { margin: 0 0 10px; font-size: 15px; color: #7dd3fc; }
+      h2 { margin: 0 0 10px; font-size: 15px; color: var(--gio-accent, #7dd3fc); }
       .muted { color: var(--mt); font-size: 13px; margin: 0; }
       .row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; align-items: center; }
       input, textarea { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #2b4370; background: #0b1220; color: #fff; font: 13px ui-monospace, monospace; }
       .row > input { flex: 1 1 220px; width: auto; }
-      button { padding: 10px 14px; border-radius: 8px; border: 1px solid var(--ac); background: var(--ac); color: #052230; font-weight: 800; font-size: 13px; cursor: pointer; }
+      button { padding: 10px 14px; border-radius: 8px; border: 1px solid var(--gio-accent, var(--ac)); background: var(--gio-accent, var(--ac)); color: var(--gio-accent-ink, #052230); font-weight: 800; font-size: 13px; cursor: pointer; }
       button.sec { background: #182845; border-color: #2b4370; color: #cfe0ff; }
       button.ok { background: var(--ok); border-color: var(--ok); color: #052e22; }
       .prop { border: 1px solid #2b4370; background: #0f1a2c; border-radius: 12px; padding: 14px; margin-top: 10px; }
       code { background: #080e1a; padding: 2px 6px; border-radius: 5px; font-size: 12px; color: #fbbf24; }
     </style>
+    <link rel="stylesheet" href="../../assets/kai-unified-hub.css?v=20261128v45" />
   </head>
   <body>
     <div class="wrap">
       <div class="card">
         <h1>Full DAO On-Chain Console (<code>Gio910Governor</code>)</h1>
-        <p class="muted">Menggantikan login OTP &amp; Google Apps Script dengan dompet Web3 (MetaMask), hak suara ERC20Votes, eksekusi kas Timelock otomatis, dan enkripsi AES-256-GCM sebelum arsip diunggah ke IPFS.</p>
+        <p class="muted">Menggantikan login OTP &amp; GAS dengan dompet Web3 (MetaMask), hak suara ERC20Votes, eksekusi kas Timelock otomatis, enkripsi AES-256-GCM sebelum IPFS, dan registri live terhubung ke <b>Supabase Postgres, Google Drive Hub, Google Sheets &amp; Notion</b>.</p>
         <div class="row">
           <button id="btn-connect" type="button">Hubungkan Dompet Web3</button>
-          <span id="wallet-info" class="muted">Belum terhubung</span>
+          <span id="wallet-info" class="muted">Belum terhubung (Registri Proposal Postgres tetap aktif)</span>
         </div>
       </div>
 
@@ -43,13 +44,13 @@
         <div class="row">
           <button id="btn-status" type="button">Cek Saldo &amp; Hak Suara</button>
           <button id="btn-delegate" type="button" class="ok">Aktifkan Hak Suara Saya (Delegate)</button>
-          <button id="btn-load-props" type="button" class="sec">Muat Proposal On-Chain</button>
+          <button id="btn-load-props" type="button" class="sec">Muat Proposal On-Chain + Postgres</button>
         </div>
         <p id="gov-status" class="muted" style="margin-top:8px">Isi alamat kontrak hasil deploy dari Remix IDE / Foundry lalu klik Cek Saldo &amp; Hak Suara.</p>
       </div>
 
       <div class="card">
-        <h2>2. Ajukan Proposal Pengeluaran Kas Timelock (On-Chain)</h2>
+        <h2>2. Ajukan Proposal Pengeluaran Kas Timelock (On-Chain + Sinkron Portal)</h2>
         <div class="row">
           <input id="inp-to" type="text" placeholder="Alamat penerima dana (0x...)" />
           <input id="inp-eth" type="text" placeholder="Jumlah ETH / native token (mis. 0.05)" />
@@ -59,18 +60,19 @@
         </div>
         <div class="row">
           <button id="btn-propose" type="button">Kirim Proposal ke Blockchain</button>
+          <button id="btn-sync-reg" type="button" class="sec">Catat Draf Proposal On-Chain ke Postgres + Sheets + Notion</button>
         </div>
         <p id="prop-tx" class="muted" style="margin-top:8px"></p>
       </div>
 
       <div class="card">
-        <h2>3. Daftar Proposal &amp; Voting On-Chain</h2>
-        <div id="props-box"><p class="muted">Belum ada proposal dimuat.</p></div>
+        <h2>3. Daftar Proposal &amp; Voting (On-Chain + Registri GIO910)</h2>
+        <div id="props-box"><p class="muted">Memuat registri proposal Governor dari Postgres…</p></div>
       </div>
 
       <div class="card">
-        <h2>4. Enkripsi / Dekripsi Dokumen Sebelum Upload ke IPFS (4EVERLAND / Pinata)</h2>
-        <p class="muted">Karena file di IPFS dapat dibaca siapa saja yang tahu CID-nya, enkripsi file rahasia menjadi <code>.kaienc</code> dulu di perangkat Anda sebelum diunggah.</p>
+        <h2>4. Enkripsi / Dekripsi Dokumen Sebelum Upload ke IPFS + Registri Drive Hub</h2>
+        <p class="muted">Enkripsi file rahasia menjadi <code>.kaienc</code> dulu di perangkat Anda sebelum diunggah ke IPFS, lalu daftarkan metadata arsipnya ke Google Drive Hub.</p>
         <div class="row">
           <input id="inp-file" type="file" />
           <input id="inp-pass" type="password" placeholder="Kata sandi enkripsi (min. 8 huruf)" />
@@ -83,6 +85,7 @@
       </div>
     </div>
 
+    <script src="../../assets/kai-config.js?v=20261128v45"></script>
     <script type="module">
       import * as ethers from "https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.min.js";
       import {
@@ -98,7 +101,85 @@
       } from "./dao-web3-adapter.js";
 
       let session = null;
+      const API = String(window.__KAI_SUPABASE_API_URL__ || "https://dttclgkjfiwcovvqrckw.supabase.co/functions/v1/gio910-api").replace(/\/+$/, "");
+      const ANON = String(window.__KAI_SUPABASE_ANON_KEY__ || "");
       const esc = (s) => String(s || "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+      function apiHeaders() {
+        const h = { "Content-Type": "application/json" };
+        if (ANON) { h["apikey"] = ANON; h["Authorization"] = "Bearer " + ANON; }
+        try {
+          const s = JSON.parse(sessionStorage.getItem("hi_session_v1") || "null");
+          if (s && s.token) h["x-gio-session"] = s.token;
+        } catch (_) {}
+        return h;
+      }
+
+      async function loadRegistryProposals(onChainItems) {
+        const box = document.getElementById("props-box");
+        let dbItems = [];
+        try {
+          const r = await fetch(API + "/api/dao/proposals", { headers: apiHeaders() });
+          const d = await r.json();
+          dbItems = (d.proposals || []).filter((p) => p.mode === "onchain" || p.mode === "hybrid");
+        } catch (_) {}
+
+        let html = "";
+        if (onChainItems && onChainItems.length) {
+          html += onChainItems.map((p, idx) => `
+            <div class="prop" data-idx="${idx}">
+              <div><b>#${esc(p.proposalId.slice(0, 10))}…</b> — <span style="color:#7dd3fc">${esc(p.stateLabel)} (On-Chain)</span></div>
+              <p class="muted" style="margin-top:4px">${esc(p.description)}</p>
+              <div class="muted" style="margin-top:6px">Setuju: <b>${esc(p.forVotes)}</b> · Tolak: <b>${esc(p.againstVotes)}</b> · Abstain: <b>${esc(p.abstainVotes)}</b></div>
+              <div class="row">
+                <button type="button" class="ok" data-vote="1" data-pid="${esc(p.proposalId)}">Vote Setuju</button>
+                <button type="button" class="sec" data-vote="0" data-pid="${esc(p.proposalId)}">Vote Tolak</button>
+                <button type="button" class="sec" data-act="queue" data-idx="${idx}">Queue</button>
+                <button type="button" class="sec" data-act="execute" data-idx="${idx}">Execute</button>
+              </div>
+            </div>`).join("");
+        }
+        html += dbItems.map((p) => `
+          <div class="prop">
+            <div><b>${esc(p.proposal_code)} · ${esc(p.title)}</b> — <span style="color:#34d399">${esc(p.state)} (${esc(p.mode.toUpperCase())} · Postgres+Sheets+Notion)</span></div>
+            <p class="muted" style="margin-top:4px">${esc(p.description || "")}</p>
+            <div class="muted" style="margin-top:6px">Kontrak/Space: <code>${esc(p.space_or_contract)}</code> · Setuju: <b>${Number(p.votes_for || 0)}</b> · Tolak: <b>${Number(p.votes_against || 0)}</b> · Abstain: <b>${Number(p.votes_abstain || 0)}</b></div>
+            <div class="row">
+              <button type="button" class="ok" data-db-vote="for" data-code="${esc(p.proposal_code)}">+1 Setuju (Sync)</button>
+              <button type="button" class="sec" data-db-vote="against" data-code="${esc(p.proposal_code)}">+1 Tolak</button>
+            </div>
+          </div>`).join("");
+
+        box.innerHTML = html || '<p class="muted">Belum ada proposal ditemukan.</p>';
+
+        box.querySelectorAll("[data-db-vote]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            await fetch(API + "/api/dao/vote", {
+              method: "POST",
+              headers: apiHeaders(),
+              body: JSON.stringify({ proposal_code: btn.getAttribute("data-code"), choice: btn.getAttribute("data-db-vote") }),
+            });
+            loadRegistryProposals(onChainItems);
+          });
+        });
+
+        if (onChainItems && onChainItems.length) {
+          const gov = document.getElementById("inp-gov").value.trim();
+          box.querySelectorAll("[data-vote]").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+              await castDaoVote(ethers, session.signer, gov, btn.getAttribute("data-pid"), Number(btn.getAttribute("data-vote")), "");
+              alert("Vote berhasil dikirim!");
+            });
+          });
+          box.querySelectorAll("[data-act]").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+              const item = onChainItems[Number(btn.getAttribute("data-idx"))];
+              await queueOrExecuteProposal(ethers, session.signer, gov, btn.getAttribute("data-act"), item.targets, item.values, item.calldatas, item.description);
+              alert("Transaksi berhasil!");
+            });
+          });
+        }
+      }
 
       document.getElementById("btn-connect").addEventListener("click", async () => {
         const info = document.getElementById("wallet-info");
@@ -145,55 +226,64 @@
           const desc = document.getElementById("inp-desc").value.trim();
           out.textContent = "Mengirim proposal ke blockchain…";
           const res = await createEthTransferProposal(ethers, session.signer, gov, to, eth, desc);
-          out.textContent = "Proposal tercatat! Tx Hash: " + res.txHash;
+          await fetch(API + "/api/dao/proposals", {
+            method: "POST",
+            headers: apiHeaders(),
+            body: JSON.stringify({
+              mode: "onchain",
+              space_or_contract: gov || "Gio910Governor",
+              title: desc.slice(0, 120),
+              description: `Penerima: ${to} | Nilai: ${eth} ETH | Tx: ${res.txHash}`,
+              tx_hash: res.txHash,
+              author_address: session.address,
+            }),
+          }).catch(() => {});
+          out.textContent = "Proposal tercatat di Blockchain + Postgres + Sheets + Notion! Tx Hash: " + res.txHash;
+          loadRegistryProposals(null);
         } catch (err) {
           out.textContent = "Gagal membuat proposal: " + (err.message || err);
         }
       });
 
-      document.getElementById("btn-load-props").addEventListener("click", async () => {
-        const box = document.getElementById("props-box");
+      document.getElementById("btn-sync-reg").addEventListener("click", async () => {
+        const out = document.getElementById("prop-tx");
+        const desc = (document.getElementById("inp-desc").value || "").trim();
+        const to = (document.getElementById("inp-to").value || "").trim();
+        const eth = (document.getElementById("inp-eth").value || "").trim();
+        const gov = (document.getElementById("inp-gov").value || "Gio910Governor").trim();
+        if (!desc) { out.textContent = "Isi rincian proposal terlebih dahulu."; return; }
         try {
-          if (!session) session = await connectWeb3Wallet(ethers);
-          const gov = document.getElementById("inp-gov").value.trim();
-          box.innerHTML = '<p class="muted">Mengambil event ProposalCreated…</p>';
-          const items = await fetchRecentProposals(ethers, session.provider, gov);
-          if (!items.length) {
-            box.innerHTML = '<p class="muted">Belum ada proposal ditemukan pada 50.000 blok terakhir.</p>';
-            return;
-          }
-          box.innerHTML = items.map((p, idx) => `
-            <div class="prop" data-idx="${idx}">
-              <div><b>#${esc(p.proposalId.slice(0, 10))}…</b> — <span style="color:#7dd3fc">${esc(p.stateLabel)}</span></div>
-              <p class="muted" style="margin-top:4px">${esc(p.description)}</p>
-              <div class="muted" style="margin-top:6px">Setuju: <b>${esc(p.forVotes)}</b> · Tolak: <b>${esc(p.againstVotes)}</b> · Abstain: <b>${esc(p.abstainVotes)}</b></div>
-              <div class="row">
-                <button type="button" class="ok" data-vote="1" data-pid="${esc(p.proposalId)}">Vote Setuju</button>
-                <button type="button" class="sec" data-vote="0" data-pid="${esc(p.proposalId)}">Vote Tolak</button>
-                <button type="button" class="sec" data-act="queue" data-idx="${idx}">Queue</button>
-                <button type="button" class="sec" data-act="execute" data-idx="${idx}">Execute</button>
-              </div>
-            </div>`).join("");
-
-          box.querySelectorAll("[data-vote]").forEach((btn) => {
-            btn.addEventListener("click", async () => {
-              const pid = btn.getAttribute("data-pid");
-              const support = Number(btn.getAttribute("data-vote"));
-              await castDaoVote(ethers, session.signer, gov, pid, support, "");
-              alert("Vote berhasil dikirim!");
-            });
+          const r = await fetch(API + "/api/dao/proposals", {
+            method: "POST",
+            headers: apiHeaders(),
+            body: JSON.stringify({
+              mode: "onchain",
+              space_or_contract: gov,
+              title: desc.slice(0, 120),
+              description: `Target: ${to || "-"} · Nilai: ${eth || "0"} ETH · ${desc}`,
+              author_address: (session && session.address) || "portal-timelock-draft",
+              votes_for: 1,
+            }),
           });
-          box.querySelectorAll("[data-act]").forEach((btn) => {
-            btn.addEventListener("click", async () => {
-              const item = items[Number(btn.getAttribute("data-idx"))];
-              const act = btn.getAttribute("data-act");
-              await queueOrExecuteProposal(ethers, session.signer, gov, act, item.targets, item.values, item.calldatas, item.description);
-              alert("Transaksi " + act + " berhasil!");
-            });
-          });
+          const d = await r.json();
+          if (!r.ok) throw new Error(d.error || ("HTTP " + r.status));
+          out.textContent = "✓ " + (d.message || "Tersinkron!");
+          loadRegistryProposals(null);
         } catch (err) {
-          box.innerHTML = `<p class="muted">Gagal memuat proposal: ${esc(err.message || err)}</p>`;
+          out.textContent = "Gagal: " + (err.message || err);
         }
+      });
+
+      document.getElementById("btn-load-props").addEventListener("click", async () => {
+        const gov = document.getElementById("inp-gov").value.trim();
+        let onChain = [];
+        if (gov) {
+          try {
+            if (!session) session = await connectWeb3Wallet(ethers);
+            onChain = await fetchRecentProposals(ethers, session.provider, gov);
+          } catch (_) {}
+        }
+        await loadRegistryProposals(onChain);
       });
 
       function triggerDownload(bytes, filename) {
@@ -217,6 +307,17 @@
           const buf = await f.arrayBuffer();
           const out = await encryptFileForIpfs(buf, pass);
           triggerDownload(out, f.name + ".kaienc");
+          try {
+            await fetch(API + "/api/connectors/action", {
+              method: "POST",
+              headers: apiHeaders(),
+              body: JSON.stringify({
+                connector: "google_drive",
+                action: "register_file",
+                payload: { name: f.name + ".kaienc", size: out.length, mimeType: "application/octet-stream", note: "Encrypted IPFS Archive (DAO Full Console)" },
+              }),
+            });
+          } catch (_) {}
           msg.textContent = `Berhasil mengenkripsi ${f.name} (${out.length} byte). Unggah file .kaienc ke IPFS.`;
         } catch (err) {
           msg.textContent = "Error: " + (err.message || err);
@@ -238,6 +339,12 @@
           msg.textContent = "Gagal mendekripsi (pastikan sandi benar): " + (err.message || err);
         }
       });
+
+      loadRegistryProposals(null);
     </script>
+    <script src="../../assets/kai-realtime.js?v=20261128v45"></script>
+    <script src="../../assets/kai-live-finance.js?v=20261128v45"></script>
+    <script src="../../assets/kai-connectors-hub.js?v=20261128v45"></script>
+    <script src="../../assets/kai-unified-hub.js?v=20261128v45"></script>
   </body>
 </html>

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Video YouTube dan tautan unduh aplikasi Holding Investasi — Portal Kantor AI untuk semua sistem operasi." />
     <meta name="theme-color" content="#0b1220" />
+    <link rel="manifest" href="../manifest.webmanifest" />
     <title>Video &amp; Unduh Aplikasi — Holding Investasi</title>
     <script>
       window.__KAI_EMBED_PAGE__ = 'unduh';
@@ -373,6 +374,7 @@
       }
       .toast.is-on { display: block; }
     </style>
+      <link rel="stylesheet" href="../assets/kai-unified-hub.css?v=20261128v45" />
   </head>
   <body>
     <div id="standalone-bar" class="standalone-bar">
@@ -429,6 +431,24 @@
 
       <section class="os-grid" id="os-grid"></section>
 
+      <div class="sec-head" style="margin-top:24px">
+        <h2 class="sec-title">3 · Paket Developer &amp; Ekosistem (Supabase + Vercel + 13 Konektor)</h2>
+        <span class="badge-ok">Stack Produksi Aktif</span>
+      </div>
+      <section class="yt-card" style="margin-bottom:18px">
+        <p style="margin:0 0 12px;color:#cfe0ff;font-size:13px">
+          Seluruh backend &amp; hosting portal telah bermigrasi penuh ke <b>Supabase (<code>gio910-api</code> + Postgres 36 Tabel Realtime)</b>, <b>Vercel (Hosting, Edge CDN &amp; Serverless <code>/api/*</code>)</b>, serta <b>13 Konektor Terpadu</b> (12 Aktif termasuk WordPress · 1 Dijeda: Dropbox) — tanpa Google Apps Script maupun Cloudflare.
+        </p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <a class="btn-prim" href="/api/connectors?sub=stack-file&name=schema.sql" download="schema.sql">⬇ Unduh schema.sql (Supabase)</a>
+          <a class="btn-sec" href="/api/connectors?sub=stack-file&name=gio910-api.ts" download="gio910-api.ts">⬇ Unduh gio910-api.ts (Edge)</a>
+          <a class="btn-sec" href="/api/connectors?sub=stack-file&name=vercel.toml" download="vercel.toml">⬇ Unduh vercel.toml (Vercel)</a>
+          <a class="btn-sec" href="/api/connectors?sub=stack-file&name=DEPLOY_SUPABASE_VERCEL.md" download="DEPLOY_SUPABASE_VERCEL.md">⬇ Panduan Deploy (.md)</a>
+          <a class="btn-prim" href="../copy-hub.html" target="_top" style="background:#34d399;color:#052e22">Buka Copy Hub &amp; Paket ZIP ↗</a>
+          <a class="btn-sec" href="../ekosistem.html" target="_top">Hub 13 Konektor &amp; Ekosistem ↗</a>
+        </div>
+      </section>
+
       <details class="cfg-panel" id="cfg-panel">
         <summary>Pengaturan Link Halaman Ini (Isi Belakangan &amp; Ekspor ke assets/kai-config.js)</summary>
         <p style="margin:8px 0 0;font-size:12.5px;color:#9fb0d0">
@@ -436,18 +456,22 @@
         </p>
         <div class="cfg-grid" id="cfg-fields"></div>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
-          <button type="button" class="btn-prim" id="cfg-save-btn">Simpan Pratinjau di Browser</button>
+          <button type="button" class="btn-prim" id="cfg-save-server-btn">Simpan Permanen ke Supabase (Semua Pengunjung)</button>
+          <button type="button" class="btn-sec" id="cfg-save-btn">Simpan Pratinjau di Browser</button>
           <button type="button" class="btn-sec" id="cfg-copy-btn">Salin Config untuk assets/kai-config.js</button>
           <button type="button" class="btn-sec" id="cfg-reset-btn">Hapus Pratinjau Lokal</button>
         </div>
+        <div id="cfg-server-msg" style="margin-top:8px;font-size:12px;color:#9fb0d0"></div>
       </details>
     </main>
 
     <div class="toast" id="toast">Tersimpan!</div>
 
-    <script src="../assets/kai-config.js"></script>
-    <script src="../assets/kai-access.js"></script>
-    <script src="../assets/kai-page-bridge.js"></script>
+    <script src="../assets/kai-config.js?v=20261128v45"></script>
+    <script src="../assets/kai-access.js?v=20261128v45"></script>
+    <script src="../assets/kai-supabase-bridge.js?v=20261128v45"></script>
+    <script src="../assets/kai-realtime.js?v=20261128v45"></script>
+    <script src="../assets/kai-page-bridge.js?v=20261128v45"></script>
     <script>
       (function () {
         "use strict";
@@ -711,8 +735,8 @@
             var isCur = os.id === currentOs;
             var hidden = currentFilter !== "all" && os.group !== currentFilter;
             var dl = cfg.downloads[os.id] || {};
-            var hasUrl = os.alwaysReady || !!(dl.url && /^https?:\/\//i.test(dl.url));
-            var hasAlt = !!(dl.altUrl && /^https?:\/\//i.test(dl.altUrl));
+            var hasUrl = os.alwaysReady || !!(dl.url && /^(https?:\/\/|\/api\/)/i.test(dl.url));
+            var hasAlt = !!(dl.altUrl && /^(https?:\/\/|\/api\/)/i.test(dl.altUrl));
 
             var primaryBtn;
             if (os.alwaysReady) {
@@ -902,10 +926,109 @@
           }
         });
 
+        document.getElementById("cfg-save-server-btn").addEventListener("click", async function () {
+          var msg = document.getElementById("cfg-server-msg");
+          var apiBase = String(window.__KAI_SUPABASE_API_URL__ || "").replace(/\/+$/, "");
+          var anon = String(window.__KAI_SUPABASE_ANON_KEY__ || "").trim();
+          var tok = "";
+          try {
+            var hs = JSON.parse(sessionStorage.getItem("hi_session_v1") || "null");
+            if (hs && hs.token) tok = hs.token;
+            if (!tok) {
+              var ss = JSON.parse(sessionStorage.getItem("kai_supa_sessions_v1") || "{}");
+              var sk = Object.keys(ss || {});
+              if (sk.length) tok = sk[sk.length - 1];
+            }
+          } catch (_) {}
+          if (!tok) {
+            var uid = window.prompt("Masukkan ID Pemilik/Manajemen (mis. OWN1):", "OWN1");
+            if (!uid) return;
+            var pin = window.prompt("Masukkan PIN akses untuk " + uid.trim().toUpperCase() + ":");
+            if (!pin) return;
+            try {
+              var lr = await fetch(apiBase + "/api/auth/login-pin", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", apikey: anon, Authorization: "Bearer " + anon },
+                body: JSON.stringify({ id: uid.trim().toUpperCase(), pin: pin.trim() })
+              });
+              var ld = await lr.json();
+              if (!lr.ok || !ld.token) throw new Error(ld.error || "Login PIN gagal");
+              tok = ld.token;
+              sessionStorage.setItem("hi_session_v1", JSON.stringify({ token: tok, user: ld.user }));
+            } catch (e) {
+              msg.style.color = "#fca5a5";
+              msg.textContent = "Otentikasi gagal: " + e.message;
+              return;
+            }
+          }
+          var cfg = getMergedConfig();
+          var dlOut = {};
+          OS_DEFS.forEach(function (os) {
+            if (os.alwaysReady) return;
+            var inp = document.getElementById("cfg-url-" + os.id);
+            var url = inp ? inp.value.trim() : ((cfg.downloads[os.id] && cfg.downloads[os.id].url) || "");
+            var prev = cfg.downloads[os.id] || {};
+            dlOut[os.id] = { url: url, altUrl: prev.altUrl || "", file: prev.file || os.formats, altLabel: prev.altLabel || "", note: prev.note || os.note };
+          });
+          var ytVal = document.getElementById("yt-quick-inp").value.trim();
+          var ytList = ytVal ? [{ title: "Video Panduan Portal", url: ytVal, desc: "Video resmi Holding Investasi." }] : (cfg.videos || []);
+          try {
+            var sr = await fetch(apiBase + "/api/media", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", apikey: anon, Authorization: "Bearer " + anon, "x-gio-session": tok },
+              body: JSON.stringify({ youtubeVideos: ytList, downloads: dlOut })
+            });
+            var sd = await sr.json();
+            if (!sr.ok) throw new Error(sd.error || "HTTP " + sr.status);
+            window.__KAI_MEDIA_CONFIG__ = Object.assign({}, window.__KAI_MEDIA_CONFIG__ || {}, sd.media || {});
+            renderYouTube();
+            renderOSCards();
+            renderCfgForm();
+            msg.style.color = "#6ee7b7";
+            msg.textContent = "✓ Tersimpan permanen ke Supabase Postgres (/api/media) untuk semua pengunjung!";
+            showToast("Media CMS tersimpan ke Supabase!");
+          } catch (e) {
+            msg.style.color = "#fca5a5";
+            msg.textContent = "Gagal simpan ke Supabase: " + e.message;
+          }
+        });
+
         renderDetectedBanner();
         renderYouTube();
         renderOSCards();
         renderCfgForm();
+
+        // Sinkronisasi Media CMS live dari Supabase Postgres (/api/media)
+        (function syncLiveMedia() {
+          var apiBase = String(window.__KAI_SUPABASE_API_URL__ || "").replace(/\/+$/, "");
+          var anon = String(window.__KAI_SUPABASE_ANON_KEY__ || "").trim();
+          if (!apiBase) return;
+          fetch(apiBase + "/api/media", {
+            headers: anon ? { apikey: anon, Authorization: "Bearer " + anon } : {}
+          })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+              if (d && d.media) {
+                var base = window.__KAI_MEDIA_CONFIG__ || {};
+                var mergedDl = Object.assign({}, base.downloads || {});
+                if (d.media.downloads) {
+                  Object.keys(d.media.downloads).forEach(function (k) {
+                    if (d.media.downloads[k] && d.media.downloads[k].url) {
+                      mergedDl[k] = Object.assign({}, mergedDl[k] || {}, d.media.downloads[k]);
+                    }
+                  });
+                }
+                window.__KAI_MEDIA_CONFIG__ = Object.assign({}, base, {
+                  youtubeVideos: (Array.isArray(d.media.youtubeVideos) && d.media.youtubeVideos.length) ? d.media.youtubeVideos : (base.youtubeVideos || []),
+                  downloads: mergedDl
+                });
+                renderYouTube();
+                renderOSCards();
+                renderCfgForm();
+              }
+            })
+            .catch(function () {});
+        })();
 
         if (window.parent !== window) {
           try {
@@ -914,5 +1037,8 @@
         }
       })();
     </script>
+      <script src="../assets/kai-live-finance.js?v=20261128v45"></script>
+      <script src="../assets/kai-connectors-hub.js?v=20261128v45"></script>
+      <script src="../assets/kai-unified-hub.js?v=20261128v45"></script>
   </body>
 </html>

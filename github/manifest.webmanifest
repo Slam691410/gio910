@@ -1,0 +1,20 @@
+{
+  "name": "Kantor AI — Holding Investasi GIO910",
+  "short_name": "Kantor AI GIO910",
+  "description": "Portal Terpadu Holding Investasi, Buku Besar 3101, e-Faktur, Payroll, Copy Hub & Tata Kelola DAO GIO910.",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220",
+  "orientation": "any",
+  "lang": "id",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='36' fill='%230b1220'/%3E%3Crect x='12' y='12' width='168' height='168' rx='28' fill='none' stroke='%2338bdf8' stroke-width='6'/%3E%3Ctext x='96' y='112' text-anchor='middle' font-family='system-ui,sans-serif' font-size='56' font-weight='800' fill='%237dd3fc'%3EGIO%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

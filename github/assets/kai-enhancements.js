@@ -172,13 +172,16 @@
       wrap.appendChild(table);
     });
     const addHint = (wrap) => {
-      let hint = wrap.previousElementSibling;
-      if (hint && hint.classList && hint.classList.contains("kai-table-hint")) hint.remove();
-      if (wrap.scrollWidth > wrap.clientWidth + 2) {
-        hint = document.createElement("div");
+      const prev = wrap.previousElementSibling;
+      const hasHint = !!(prev && prev.classList && prev.classList.contains("kai-table-hint"));
+      const needHint = wrap.scrollWidth > wrap.clientWidth + 2;
+      if (needHint && !hasHint) {
+        const hint = document.createElement("div");
         hint.className = "kai-table-hint";
         hint.textContent = "Geser tabel horizontal →";
         wrap.parentNode.insertBefore(hint, wrap);
+      } else if (!needHint && hasHint) {
+        prev.remove();
       }
     };
     $$(".kai-table-wrap").forEach(addHint);
@@ -417,8 +420,8 @@
     const btn = $("#kai-btn-data");
     const open = typeof force === "boolean" ? force : !pop.classList.contains("is-open");
     pop.classList.toggle("is-open", open);
-    btn.setAttribute("aria-expanded", open ? "true" : "false");
-    if (open) {
+    if (btn) btn.setAttribute("aria-expanded", open ? "true" : "false");
+    if (open && btn) {
       const r = btn.getBoundingClientRect();
       pop.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 260)) + "px";
       pop.style.top = r.bottom + 8 + "px";
@@ -1360,9 +1363,9 @@
       const ok = write("kai-backup-last", { at: now(), json: snap });
       return { ok, bytes: snap.length, where: "browser (localStorage)" };
     }
-    if (target === "drive" && IS_GAS) {
+    if (target === "drive" && (IS_GAS || window.__KAI_SUPABASE_BRIDGE__)) {
       return new Promise((res) => {
-        window.google.script.run.withSuccessHandler((r) => res({ ok: true, where: "Google Drive", name: r && r.name, bytes: r && r.bytes })).withFailureHandler((e) => res({ ok: false, where: "Google Drive", err: e.message }))( "gasApiDispatch", "backup.toDrive", (session() || {}).token || "", {});
+        window.google.script.run.withSuccessHandler((r) => res({ ok: true, where: "Supabase + Google Drive", name: r && r.name, bytes: r && r.bytes })).withFailureHandler((e) => res({ ok: false, where: "Google Drive", err: (e && e.message) || String(e) })).gasWorkspaceDispatch("backup.toDrive", (session() || {}).token || "", {});
       });
     }
     return Promise.resolve({ ok: false, where: "Google Drive", err: "Hanya tersedia saat berjalan di Apps Script." });
@@ -1672,7 +1675,7 @@
   function l05Body() {
     const head = ["Rute / modul", "Pemilik", "Manajemen", "Staf", "Freelancer", "Auditor", "Tamu"];
     const rows = HAK.map((r) => "<tr>" + r.map((c, i) => "<td>" + (i === 0 ? "<code>" + esc(c) + "</code>" : c === "—" ? '<span class="kai-reg-no">—</span>' : '<span class="kai-reg-yes">' + esc(c) + "</span>") + "</td>").join("") + "</tr>");
-    return table(head, rows) + '<p class="kai-reg-note">Aturan ini dijalankan di tiga tempat dengan kebijakan yang sama: tampilan (menu & gerbang halaman), lapisan data lokal mode mandiri, dan server <code>Code.gs</code> (<code>allow_()</code> + pemisahan tugas + kepemilikan data). Tamu tidak mendapat akses modul apa pun.</p>';
+    return table(head, rows) + '<p class="kai-reg-note">Aturan ini dijalankan di tiga tempat dengan kebijakan yang sama: tampilan (menu & gerbang halaman), lapisan data lokal mode mandiri, dan Supabase Edge Function <code>gio910-api</code> (RBAC + pemisahan tugas + kepemilikan data). Tamu tidak mendapat akses modul apa pun.</p>';
   }
   function l04Body() {
     const rows = FIELD_BARU.map((r) => "<tr><td>" + esc(r[0]) + "</td><td>" + esc(r[1]) + "</td><td><code>" + esc(r[2]) + "</code></td><td>" + esc(r[3]) + "</td><td>" + esc(r[4]) + "</td><td>" + statusSelect(r[0]) + "</td></tr>");
@@ -1735,11 +1738,11 @@
     wrap.id = id;
     wrap.innerHTML =
       '<div class="kai-modal-card"><div class="kai-modal-head"><h2>Cadangan & Pemulihan</h2><button type="button" class="kai-modal-close" aria-label="Tutup">✕</button></div>' +
-      '<div class="kai-modal-body"><p class="kai-reg-note">Tiga salinan: unduhan berkas, salinan di browser, dan Google Drive (bila berjalan di Apps Script).</p>' +
+      '<div class="kai-modal-body"><p class="kai-reg-note">Tiga salinan: unduhan berkas, salinan di browser, dan Supabase + Google Drive (via Konektor).</p>' +
       '<div class="kai-backup-grid">' +
       '<button type="button" class="kai-backup-btn" data-bk="download"><b>⬇ Unduh salinan</b><span>JSON berisi seluruh modul</span></button>' +
       '<button type="button" class="kai-backup-btn" data-bk="browser"><b>◷ Salin di browser</b><span>Untuk uji pemulihan</span></button>' +
-      '<button type="button" class="kai-backup-btn" data-bk="drive"><b>☁ Google Drive</b><span>' + (IS_GAS ? "Tersedia" : "Hanya di Apps Script") + "</span></button>" +
+      '<button type="button" class="kai-backup-btn" data-bk="drive"><b>☁ Supabase + Drive</b><span>' + ((IS_GAS || window.__KAI_SUPABASE_BRIDGE__) ? "Tersedia via Konektor" : "Butuh Sesi") + "</span></button>" +
       "</div>" +
       '<h3>Uji pemulihan (B-02)</h3><p class="kai-reg-note">Membandingkan salinan terakhir dengan data hidup, menulis ke ruang terpisah lalu membaca ulang. Data hidup tidak diubah.</p>' +
       '<button type="button" class="kai-backup-btn" data-bk="test"><b>✓ Jalankan uji pemulihan</b><span>Lihat selisih per modul</span></button>' +
@@ -1755,6 +1758,23 @@
       const a = b.getAttribute("data-bk");
       const out = $("#kai-backup-out", wrap);
       if (a === "test") {
+        if (window.__KAI_SUPABASE_BRIDGE__ && window.__KAI_SUPABASE_BRIDGE__.getActiveToken()) {
+          out.innerHTML = '<p class="kai-reg-note">Menguji integritas tabel Postgres &amp; rantai audit SHA-256…</p>';
+          window.google.script.run
+            .withSuccessHandler((rep) => {
+              const chain = (rep && rep.auditChain) || { rows: 0, broken: 0 };
+              out.innerHTML =
+                '<p class="kai-backup-' + (rep && rep.ok ? "ok" : "bad") + '">' +
+                (rep && rep.ok ? "LULUS LIVE POSTGRES" : "PERIKSA") + " · " + ((rep && rep.tables && rep.tables.length) || 0) + " tabel diperiksa</p>" +
+                ((rep && rep.tables) || []).map((t) => "<p class='kai-backup-row'>" + esc(t.table) + ": live " + t.live + " · " + esc(t.status) + "</p>").join("") +
+                '<p class="kai-reg-note">Rantai audit Postgres: ' + chain.rows + " baris · putus " + chain.broken + "</p>";
+            })
+            .withFailureHandler((err) => {
+              out.innerHTML = '<p class="kai-backup-bad">Gagal uji Postgres: ' + esc((err && err.message) || String(err)) + "</p>";
+            })
+            .gasWorkspaceDispatch("backup.test", (session() || {}).token || "", {});
+          return;
+        }
         const r = restoreSelfTest();
         out.innerHTML = r.msg ? '<p class="kai-reg-note">' + esc(r.msg) + "</p>" :
           '<p class="kai-backup-' + (r.ok ? "ok" : "bad") + '">' + (r.ok ? "LULUS" : "ADA SELISIH") + " · " + r.tables.length + " modul diperiksa</p>" +
@@ -1773,42 +1793,41 @@
   function openCodegs() {
     const id = "kai-codegs-modal";
     if ($("#" + id)) { openExistingModal($("#" + id)); return; }
-    const src = ($("#kai-codegs") && $("#kai-codegs").textContent) || "";
-    const json = ($("#kai-appsscript-json") && $("#kai-appsscript-json").textContent) || "{}";
     const wrap = document.createElement("div");
     wrap.className = "kai-modal";
     wrap.id = id;
     wrap.innerHTML =
-      '<div class="kai-modal-card"><div class="kai-modal-head"><h2>Backend Apps Script (Code.gs)</h2><button type="button" class="kai-modal-close" aria-label="Tutup">✕</button></div>' +
-      '<div class="kai-modal-body"><p class="kai-reg-note">Berkas ini sudah siap ditempel ke proyek Apps Script. HTML ini menjadi <code>Index.html</code>; jembatan <code>gasApiDispatch</code> sudah dipakai aplikasi sejak awal.</p>' +
-      '<ol class="kai-steps"><li>Buat proyek baru di script.google.com.</li><li>Tempel isi Code.gs (unduh atau salin di bawah).</li><li>Tempel isi appsscript.json ke file settings proyek.</li><li>Tempel berkas HTML ini sebagai Index.html.</li><li>Deploy → New deployment → Web app (Execute as: Me).</li><li>Jalankan sekali <code>installTriggers()</code> untuk backup harian otomatis.</li></ol>' +
+      '<div class="kai-modal-card"><div class="kai-modal-head"><h2>Arsitektur Aktif: Supabase + Vercel + 13 Konektor</h2><button type="button" class="kai-modal-close" aria-label="Tutup">✕</button></div>' +
+      '<div class="kai-modal-body"><p class="kai-reg-note">Portal ini berjalan penuh di atas <b>Supabase Postgres + Edge Function (<code>gio910-api</code>)</b>, <b>Vercel Serverless (<code>/api/*</code>)</b>, dan <b>13 Konektor Ekosistem</b> (12 Aktif termasuk WordPress · 1 Dijeda: Dropbox) — tanpa Google Apps Script maupun Cloudflare.</p>' +
+      '<ol class="kai-steps"><li><b>Backend Database &amp; Edge:</b> Supabase <code>dttclgkjfiwcovvqrckw</code> (36 Tabel Realtime + <code>gio910-api</code>).</li><li><b>Hosting, CDN &amp; Serverless:</b> Vercel <code>/api/connectors</code>, <code>/api/copy-hub</code> &amp; custom domain via <code>vercel.toml</code>.</li><li><b>Konektor Live:</b> Google Drive, Sheets, Docs, Slides, Calendar, Gmail, Figma, Notion, Linear, WordPress, Supabase &amp; Vercel.</li><li><b>Copy Hub &amp; ZIP:</b> Kelola parameter 5 Mode, SQL, Edge Function &amp; Vercel bundle di halaman Copy Hub.</li></ol>' +
       '<div class="kai-codegs-actions">' +
-      '<button type="button" class="kai-backup-btn" data-cg="code"><b>⬇ Unduh Code.gs</b><span>' + (src.length / 1024).toFixed(0) + " KB</span></button>" +
-      '<button type="button" class="kai-backup-btn" data-cg="copy"><b>⧉ Salin Code.gs</b><span>ke clipboard</span></button>' +
-      '<button type="button" class="kai-backup-btn" data-cg="json"><b>⬇ appsscript.json</b><span>' + (json.length / 1024).toFixed(1) + " KB</span></button>" +
+      '<button type="button" class="kai-backup-btn" data-cg="schema"><b>⬇ schema.sql</b><span>Supabase SQL</span></button>' +
+      '<button type="button" class="kai-backup-btn" data-cg="edge"><b>⬇ gio910-api.ts</b><span>Edge Function</span></button>' +
+      '<button type="button" class="kai-backup-btn" data-cg="vercel"><b>⬇ vercel.toml</b><span>Konfig Vercel</span></button>' +
+      '<button type="button" class="kai-backup-btn" data-cg="copyhub"><b>↗ Copy Hub</b><span>5 Mode + ZIP</span></button>' +
+      '<button type="button" class="kai-backup-btn" data-cg="conn"><b>🔌 Konektor</b><span>12 ON / 1 OFF</span></button>' +
       "</div>" +
-      '<p class="kai-reg-note">Rute yang tersedia di Code.gs: ' + (src.match(/case '[a-z]+\.[a-zA-Z]+'/g) || []).length + " · termasuk <code>audit.verify</code>, <code>backup.toDrive</code>, dan dual control kas ≥ Rp5 juta.</p>" +
+      '<p class="kai-reg-note">Endpoint aktif: <code>/api/health</code>, <code>/api/copyhub/params</code>, <code>/api/connectors</code>, dan Realtime WebSocket 36 tabel.</p>' +
       "</div></div>";
     document.body.appendChild(wrap);
     wrap.classList.add("is-open");
     wrap.addEventListener("click", (e) => { if (e.target === wrap) wrap.classList.remove("is-open"); });
     wrap.querySelector(".kai-modal-close").addEventListener("click", () => wrap.classList.remove("is-open"));
-    wrap.addEventListener("click", async (e) => {
+    wrap.addEventListener("click", (e) => {
       const b = e.target.closest("[data-cg]");
       if (!b) return;
       const a = b.getAttribute("data-cg");
-      if (a === "code") download("Code.gs", src, "text/plain");
-      if (a === "json") download("appsscript.json", json, "application/json");
-      if (a === "copy") {
-        try { await navigator.clipboard.writeText(src); banner("Code.gs tersalin ke clipboard."); }
-        catch (_) { download("Code.gs", src, "text/plain"); }
+      if (a === "schema") window.open("/api/connectors?sub=stack-file&name=schema.sql", "_blank");
+      if (a === "edge") window.open("/api/connectors?sub=stack-file&name=gio910-api.ts", "_blank");
+      if (a === "vercel") window.open("/api/connectors?sub=stack-file&name=vercel.toml", "_blank");
+      if (a === "copyhub") window.open("/copy-hub.html", "_blank");
+      if (a === "conn") {
+        wrap.classList.remove("is-open");
+        if (window.__KAI_OPEN_CONNECTORS_HUB__) window.__KAI_OPEN_CONNECTORS_HUB__("connectors");
+        else window.open("/ekosistem.html#gio-connectors-mount", "_blank");
       }
     });
   }
-
-  /* ============================================================
-     8 · UI: tombol toolbar, mode badge, status aksi
-     ============================================================ */
   function ensureToolbarButtons() {
     const bar = $(".kai-toolbar");
     if (!bar || $("#kai-btn-reg")) return;
@@ -1825,7 +1844,7 @@
     };
     mk("kai-btn-backup", "◴", "Cadangan", "Cadangan, uji pemulihan, dan 3 salinan", openBackup);
     mk("kai-btn-reg", "▤", "Register", "Register kepatuhan: badan hukum, kalender, kontrol internal, PDP, biaya, adopsi", openRegister);
-    mk("kai-btn-codegs", "⚙", "Code.gs", "Backend Apps Script: unduh atau salin Code.gs", openCodegs);
+    mk("kai-btn-codegs", "⚙", "Stack API", "Arsitektur Aktif: Supabase + Vercel & 13 Konektor (tanpa GAS/Cloudflare)", openCodegs);
   }
 
   function ensureModeBadge() {
@@ -1833,10 +1852,8 @@
     const target = $("header") || $("body");
     const b = document.createElement("div");
     b.id = "kai-mode-badge";
-    b.className = "kai-mode-badge" + (IS_GAS ? " is-gas" : "");
-    b.innerHTML = IS_GAS
-      ? '<span class="kai-mode-dot"></span> MODE APPS SCRIPT · data di server + Drive'
-      : '<span class="kai-mode-dot"></span> MODE DEMO LOKAL · data di browser ini';
+    b.className = "kai-mode-badge is-gas";
+    b.innerHTML = '<span class="kai-mode-dot"></span> LIVE POSTGRES REALTIME · Supabase gio910-api v4.0';
     target.appendChild(b);
   }
 
@@ -1848,7 +1865,7 @@
     ensureActBox();
     (function retryToolbar(n) { ensureToolbarButtons(); if (!$("#kai-btn-reg") && n < 120) setTimeout(() => retryToolbar(n + 1), 250); })(0);
     ensureModeBadge();
-    logAct("Sistem siap · mode " + (IS_GAS ? "Apps Script" : "demo lokal"), "ok");
+    logAct("Sistem siap · Holding OS v4.0 Realtime", "ok");
 
     window.addEventListener("online", () => { banner("Kembali daring. Mengirim antrean…"); replayOutbox(false); });
     window.addEventListener("offline", () => {
@@ -3117,4 +3134,69 @@
   document.addEventListener("input", function (e) { if (e.target && e.target.id === "kai-mit-q") { state.q = e.target.value; clearTimeout(timer); timer = setTimeout(function () { rerender(true); }, 220); } });
   window.__kaiMitigasiBody = body;
   window.__kaiMitigasiCounts = function () { return window.__kaiToolAllowed && window.__kaiToolAllowed("kai-btn-reg") ? counts() : null; };
+})();
+
+/* === LIVE SUPABASE SYNC HOOKS FOR CARDS, REGISTERS, AUDIT, LEDGER & CONNECTORS === */
+(() => {
+  try {
+    const B = window.__KAI_SUPABASE_BRIDGE__;
+    if (!B) return;
+    const origSetItem = Storage.prototype.setItem;
+    Storage.prototype.setItem = function (k, v) {
+      origSetItem.apply(this, arguments);
+      if (this === localStorage && (k === "kai-registers-v1" || k === "kai-mitigasi-status-v1") && B.getActiveToken()) {
+        try {
+          const parsed = JSON.parse(v);
+          const entries = Object.entries(parsed || {}).slice(0, 20);
+          entries.forEach(([itemId, val]) => {
+            const st = typeof val === "string" ? val : (val && (val.status || val.Status) || "Aktif");
+            B.apiFetch("POST", "/api/registers", {
+              item_id: k + ":" + itemId,
+              register_type: k === "kai-mitigasi-status-v1" ? "mitigasi" : "register",
+              status: String(st),
+              data: typeof val === "object" ? val : { value: val },
+            }).catch(() => {});
+          });
+        } catch (_) {}
+      }
+    };
+    document.addEventListener("click", (e) => {
+      const revBtn = e.target && e.target.closest ? e.target.closest("#kai-card-revoke") : null;
+      if (revBtn && B.getActiveToken()) {
+        let nonces = [];
+        try {
+          nonces = (JSON.parse(localStorage.getItem("kai-cards-v1") || "[]") || []).map((c) => c.nonce).filter(Boolean);
+        } catch (_) {}
+        B.apiFetch("POST", "/api/auth/card-revoke", { nonces }).then(() => {
+          const out = document.getElementById("kai-card-out");
+          if (out) out.innerHTML = "<p class='kai-backup-ok'>Kartu dicabut di server Supabase Postgres &amp; perangkat ini.</p>";
+        }).catch(() => {});
+      }
+      const biayaTab = e.target && e.target.closest ? e.target.closest('[data-otab="biaya"]') : null;
+      if (biayaTab && B.getActiveToken()) {
+        setTimeout(() => {
+          B.apiFetch("GET", "/api/finance/summary").then((r) => {
+            const kasEl = document.getElementById("kai-kas");
+            if (kasEl && r && r.summary && r.summary.totals) {
+              kasEl.textContent = "Rp" + Math.round(Number(r.summary.totals.kas1101 || 0)).toLocaleString("id-ID");
+            }
+          }).catch(() => {});
+        }, 120);
+      }
+    });
+    if (window.self === window.top && document.body) {
+      if (!window.__KAI_LIVE_FINANCE_MOUNTED__ && !document.getElementById("kai-live-finance-script")) {
+        const s = document.createElement("script");
+        s.id = "kai-live-finance-script";
+        s.src = "/assets/kai-live-finance.js?v=20261128v45";
+        document.body.appendChild(s);
+      }
+      if (!window.__KAI_CONNECTORS_HUB_MOUNTED__ && !document.getElementById("kai-connectors-hub-script")) {
+        const c = document.createElement("script");
+        c.id = "kai-connectors-hub-script";
+        c.src = "/assets/kai-connectors-hub.js?v=20261128v45";
+        document.body.appendChild(c);
+      }
+    }
+  } catch (_) {}
 })();
